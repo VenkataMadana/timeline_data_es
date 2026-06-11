@@ -1,0 +1,891 @@
+{
+  "$schema_version": "2.0",
+  "$document_type": "patient_value_care",
+  "$cdc_key": "patient.id (origid)",
+  "$rule_engine_notes": [
+    "This document is the single source of truth for all value-care rule evaluation.",
+    "Rules operate on flat paths — e.g. patient.risk_summary.uha_percentile >= 80 triggers High-Risk outreach.",
+    "patient.rule_flags{} is a pre-computed boolean/numeric summary refreshed on every CDC update.",
+    "   Rule engines read rule_flags first; they traverse sub-arrays only for detail/audit.",
+    "Encounter-linked events are embedded: diagnoses, procedures, screenings, meds, transport,",
+    "   home_program, care_plans, communications, documents — all inside encounters[].",
+    "Patient-level chronic data has NO encounter_nr in MySQL: medications, assessments, labs,",
+    "   alerts, sdoh, emr_appointments, hedis_measures, raf_profile, risk_scores, uamcc.",
+    "CDC update strategy: ReplaceOne on {patient.id} — full document replace every time.",
+    "   Sub-array items use their id (source MySQL PK) for idempotent re-inserts."
+  ],
+
+  "patient": {
+
+    "id":         "A01AKXCZMCX",
+    "account_id": "MBI-A01AKXCZMCX",
+    "origid":     "A01AKXCZMCX",
+    "mbi":        "1EG4-TE5-MK72",
+
+    "demographics": {
+      "last_name":    "Smith",
+      "first_name":   "John",
+      "middle_name":  "M",
+      "dob":          "1955-06-12",
+      "age":          69,
+      "sex":          "Male",
+      "sex_at_birth": "Male",
+      "race":         "White",
+      "ethnicity":    "Non-Hispanic",
+      "language":     "English",
+      "civil_status": "Married",
+      "blood_group":  "O+",
+      "dnr_status":   "Full Code",
+      "nursing_home_alert": false
+    },
+
+    "contact": {
+      "phone_primary":   "305-555-0011",
+      "phone_secondary": null,
+      "cellphone":       "786-555-1234",
+      "email":           "john.smith@email.com",
+      "no_email":        false,
+      "address": {
+        "street":   "123 Main St",
+        "city":     "Miami",
+        "state":    "FL",
+        "zip":      "33101",
+        "country":  "US",
+        "verified": true
+      },
+      "emergency_contact": {
+        "name":     "Mary Smith",
+        "relation": "Spouse",
+        "phone":    "305-555-0022"
+      }
+    },
+
+    "care_team": {
+      "dce_provider":       "Dr. Maria Lopez",
+      "dce_provider_npi":   "1234567890",
+      "dce_group":          "Metro Health Clinic",
+      "dce_group_id":       4201,
+      "primary_doctor":     "Dr. Robert Jones",
+      "primary_doctor_npi": "0987654321",
+      "care_manager":       "Jane Doe RN",
+      "last_pcp_visit":     "2025-03-22",
+      "next_pcp_visit":     "2025-09-22",
+      "days_since_pcp_visit": 74,
+      "market_id":          5,
+      "market_name":        "South Florida",
+      "facility_name":      "Metro Health Clinic",
+      "facility_nr":        2001,
+      "member_type":        "Medicare"
+    },
+
+    "enrollment": {
+      "status":            "Active",
+      "align_status_code": "AL",
+      "ccm_enabled":       true,
+      "ccm_level":         2,
+      "ccm_active_date":   "2024-01-01",
+      "ccm_inactive_date": null,
+      "consent_on_file":   true,
+      "dr_first_status":   "active",
+      "high_utilizer":     false,
+      "long_term_care":    false,
+      "inactive_date":     null,
+      "inactive_reason":   null
+    },
+
+    "rule_flags": {
+      "_comment": "Pre-computed at CDC write time. Rule engine reads these first without traversing sub-arrays.",
+
+      "risk_tier":              "High",
+      "uha_percentile":         81,
+      "raf_score":              1.412,
+      "hcc_capture_pct":        66.7,
+      "hcc_gaps_open":          2,
+      "hcc_gap_codes":          ["HCC-85", "HCC-108"],
+
+      "readmit_30d":            false,
+      "readmit_90d":            false,
+      "last_admission_date":    "2025-02-14",
+      "last_discharge_date":    "2025-02-16",
+      "open_inpatient":         false,
+
+      "awv_due":                true,
+      "awv_last_date":          null,
+      "pcp_visit_overdue":      false,
+      "pcp_days_since_visit":   74,
+
+      "hedis_gaps_open":        0,
+      "hedis_gap_measures":     [],
+
+      "rx_adherence_pct":       83.56,
+      "rx_adherence_flag":      "Adequate",
+      "high_risk_med_flag":     false,
+
+      "ccm_enrolled":           true,
+      "ccm_consent_on_file":    true,
+      "ccm_level":              2,
+
+      "sdoh_food_insecurity":   true,
+      "sdoh_transport_barrier": false,
+      "sdoh_meal_plan_active":  true,
+
+      "care_plan_active":       true,
+      "care_plan_overdue_reassessment": false,
+
+      "uamcc_eligible":         true,
+      "uamcc_conditions":       ["Atrial Fibrillation", "CKD", "Diabetes", "Heart Failure"],
+      "uamcc_condition_count":  4,
+
+      "active_alerts":          1,
+      "unresolved_alert_types": ["Hedis/Quality"],
+
+      "last_updated":           "2025-06-04T00:00:00Z"
+    },
+
+    "chronic_conditions": [
+      {
+        "id":                "E11.9",
+        "icd_code":          "E11.9",
+        "icd_desc":          "Type 2 diabetes mellitus without complications",
+        "hcc_number":        "19",
+        "hcc_score":         0.318,
+        "condition_category":"Diabetes",
+        "is_comorbid":       false,
+        "problem_type":      "Principal",
+        "status":            "Active",
+        "first_onset_date":  "2018-03-10",
+        "last_seen_date":    "2025-06-10",
+        "days_since_last_seen": 0,
+        "encounter_count":   4,
+        "snomed_cid":        "44054006",
+        "snomed_fsn":        "Diabetes mellitus type 2",
+        "agreement_status":  "Agree",
+        "ccm_tracked":       true,
+        "recapture_needed":  false,
+        "source":            "cclf"
+      },
+      {
+        "id":                "I10",
+        "icd_code":          "I10",
+        "icd_desc":          "Essential hypertension",
+        "hcc_number":        null,
+        "hcc_score":         null,
+        "condition_category":"Hypertension",
+        "is_comorbid":       true,
+        "problem_type":      "Secondary",
+        "status":            "Active",
+        "first_onset_date":  "2017-01-15",
+        "last_seen_date":    "2025-02-14",
+        "days_since_last_seen": 109,
+        "encounter_count":   2,
+        "snomed_cid":        null,
+        "snomed_fsn":        null,
+        "agreement_status":  "Agree",
+        "ccm_tracked":       true,
+        "recapture_needed":  false,
+        "source":            "cclf"
+      },
+      {
+        "id":                "I48",
+        "icd_code":          "I48",
+        "icd_desc":          "Atrial Fibrillation",
+        "hcc_number":        "96",
+        "hcc_score":         0.477,
+        "condition_category":"Atrial Fibrillation",
+        "is_comorbid":       false,
+        "problem_type":      "Principal",
+        "status":            "Active",
+        "first_onset_date":  "2020-07-22",
+        "last_seen_date":    "2025-03-01",
+        "days_since_last_seen": 95,
+        "encounter_count":   3,
+        "snomed_cid":        null,
+        "snomed_fsn":        null,
+        "agreement_status":  "Agree",
+        "ccm_tracked":       true,
+        "recapture_needed":  false,
+        "source":            "cclf"
+      }
+    ],
+
+    "raf_profile": {
+      "id":          "A01AKXCZMCX_2025",
+      "year":        2025,
+      "pmra":        { "detail_score": 1.254, "initial_score": 0.987, "month": 6 },
+      "prmra":       { "detail_score": 1.412, "initial_score": 1.100, "month": 6 },
+      "rmra":        { "detail_score": 1.312, "initial_score": 1.050, "month": 6 },
+      "raf_version": 28,
+      "score_trend": "Increasing"
+    },
+
+    "hcc_capture": {
+      "id":            "A01AKXCZMCX_2025_v24",
+      "year":          2025,
+      "hcc_version":   24,
+      "eligible_hccs": 6,
+      "captured_hccs": 4,
+      "capture_pct":   66.7,
+      "gap_hccs":      ["HCC-85", "HCC-108"],
+      "gap_revenue_at_risk": 1240.00
+    },
+
+    "risk_scores": {
+      "id":   "A01AKXCZMCX_2025",
+      "year": 2025,
+      "uha": [
+        { "index_date": "2025-01-01", "prediction": 0.42, "percentile": 78, "risk_tier": "High" },
+        { "index_date": "2025-04-01", "prediction": 0.45, "percentile": 81, "risk_tier": "High" }
+      ],
+      "chf": [
+        { "index_date": "2025-01-01", "prediction": 0.18, "percentile": 55, "risk_tier": "Medium" }
+      ],
+      "roster_scores": {
+        "avg_adi_score": 62.5,
+        "cdi_score":     44,
+        "equity_score":  0.72
+      }
+    },
+
+    "uamcc": {
+      "summary": {
+        "id":                "A01AKXCZMCX_2025",
+        "year":              2025,
+        "conditions":        ["Atrial Fibrillation", "Chronic Kidney Disease", "Diabetes", "Heart Failure"],
+        "icd_prefixes":      ["E11", "I48", "I50", "N18"],
+        "condition_count":   4,
+        "program_eligible":  true
+      },
+      "details": [
+        {
+          "id":                 33401,
+          "service_date":       "2025-05-22",
+          "condition_category": "Diabetes",
+          "icd_code":           "E11.9",
+          "icd_desc":           "Type 2 diabetes mellitus without complications",
+          "provider_npi":       "1234567890",
+          "provider_name":      "Dr. Robert Jones",
+          "provider_taxonomy":  "207R00000X",
+          "facility_name":      "Metro Health Clinic",
+          "claim_source":       "CCLF",
+          "claim_type":         "Professional",
+          "cohort_priority":    2,
+          "version":            5
+        }
+      ]
+    },
+
+    "medication_adherence": {
+      "id":               "A01AKXCZMCX_2025",
+      "year":             2025,
+      "covered_days":     305,
+      "rx_adherence_pct": 83.56,
+      "adherence_flag":   "Adequate",
+      "star_rating_impact": "On Track"
+    },
+
+    "hedis_measures": [
+      {
+        "id":                   "CRC_2025",
+        "encounter_nr":         7723001,
+        "measure_year":         2025,
+        "frows_nr":             1042,
+        "measure_name":         "Colorectal Cancer Screening",
+        "last_screening_date":  "2025-05-10",
+        "prior_screening_date": "2024-02-14",
+        "status":               "Compliant",
+        "days_until_due":       null,
+        "gap_open":             false
+      },
+      {
+        "id":                   "A1C_2025",
+        "encounter_nr":         7723001,
+        "measure_year":         2025,
+        "frows_nr":             1055,
+        "measure_name":         "Diabetes HbA1c Control",
+        "last_screening_date":  "2025-03-10",
+        "prior_screening_date": "2024-06-15",
+        "status":               "Compliant",
+        "days_until_due":       null,
+        "gap_open":             false
+      }
+    ],
+
+    "encounters": [
+      {
+        "id":              9910234,
+        "encounter_nr":    9910234,
+        "claim_ref_num":   "CLM-2025-001",
+        "source_system":   "adt",
+        "enc_class_nr":    4,
+        "encounter_type":  "Inpatient",
+        "encounter_status":"closed",
+        "setting":         "Acute Hospital",
+        "pos":             21,
+        "pos_curr":        21,
+        "place_of_service":"Inpatient Hospital",
+
+        "dates": {
+          "admission_date":      "2025-02-14",
+          "discharge_date":      "2025-02-16",
+          "length_of_stay_days": 2,
+          "next_pcp_visit":      "2025-03-01",
+          "hcc_followup_date":   "2025-03-01",
+          "cm_followup_date":    "2025-02-28",
+          "tcm_7day_deadline":   "2025-02-23",
+          "tcm_14day_deadline":  "2025-03-02"
+        },
+
+        "facility": {
+          "name":        "Regional Medical Center",
+          "npi":         "1508976543",
+          "taxonomy":    "282N00000X",
+          "hospital_nr": 3001,
+          "oscar_num":   "10-0001"
+        },
+
+        "provider": {
+          "attending_name":        "Dr. Anna Chen",
+          "attending_npi":         "1122334455",
+          "attending_taxonomy":    "208D00000X",
+          "dce_provider":          "Dr. Maria Lopez",
+          "dce_group":             "Metro Health Clinic",
+          "care_status_personnel": "Jane Doe RN"
+        },
+
+        "admission": {
+          "point_of_origin":    "Emergency",
+          "purpose":            "Chest Pain",
+          "admit_type_cd":      "1",
+          "admit_source_cd":    "7",
+          "confirmed_mra":      true,
+          "high_utilizer":      false,
+          "referrer_diagnosis": "Chest pain, rule out ACS"
+        },
+
+        "discharge": {
+          "disposition":       "Home",
+          "discharge_to_code": "01",
+          "readmit_30d":       false,
+          "readmit_er_30d":    false,
+          "readmit_rate_pct":  0.0,
+          "care_status":       "Active",
+          "tfu_enabled":       true,
+          "followup_days":     14,
+          "acr_numerator":     1,
+          "tcm_numerator":     1,
+          "tcm_completed":     true
+        },
+
+        "claim": {
+          "clm_uniq_id":       "CMS-2025-9910234",
+          "clm_amt_paid":      4250.00,
+          "clm_efctv_dt":      "2025-02-14",
+          "bill_fac_type_cd":  "11",
+          "rndrg_prvdr_npi":   "1122334455",
+          "patient_status_cd": "01",
+          "prvdr_spclty_cd":   "01"
+        },
+
+        "diagnoses": [
+          {
+            "id":               4482201,
+            "icd_code":         "R07.9",
+            "icd_desc":         "Chest pain, unspecified",
+            "onset_date":       "2025-02-14",
+            "problem_type":     "Principal",
+            "icd_order":        1,
+            "status":           "Active",
+            "hcc_number":       null,
+            "hcc_score":        null,
+            "hcc_included":     false,
+            "is_comorbid":      false,
+            "agreement_status": "Agree",
+            "source":           "cclf"
+          },
+          {
+            "id":               4482202,
+            "icd_code":         "E11.9",
+            "icd_desc":         "Type 2 diabetes mellitus without complications",
+            "onset_date":       "2025-02-14",
+            "problem_type":     "Secondary",
+            "icd_order":        2,
+            "status":           "Active",
+            "hcc_number":       "19",
+            "hcc_score":        0.318,
+            "hcc_included":     true,
+            "is_comorbid":      true,
+            "agreement_status": "Agree",
+            "source":           "cclf"
+          },
+          {
+            "id":               4482203,
+            "icd_code":         "I10",
+            "icd_desc":         "Essential hypertension",
+            "onset_date":       "2025-02-14",
+            "problem_type":     "Secondary",
+            "icd_order":        3,
+            "status":           "Active",
+            "hcc_number":       null,
+            "hcc_score":        null,
+            "hcc_included":     false,
+            "is_comorbid":      true,
+            "agreement_status": "Agree",
+            "source":           "cclf"
+          }
+        ],
+
+        "procedures": [
+          {
+            "id":             "99223_2025-02-14",
+            "billing_code":   "99223",
+            "cpt_name":       "Initial hospital care, high complexity",
+            "procedure_date": "2025-02-14",
+            "revenue_code":   "0100"
+          },
+          {
+            "id":             "93000_2025-02-14",
+            "billing_code":   "93000",
+            "cpt_name":       "Electrocardiogram, routine",
+            "procedure_date": "2025-02-14",
+            "revenue_code":   null
+          }
+        ],
+
+        "risk_screenings": [
+          {
+            "id":                6610,
+            "sub_type":          "SDOH",
+            "code_desc":         "Food insecurity screening",
+            "comments":          "Patient reports occasional food shortage",
+            "result_value_desc": "Positive",
+            "result_flag":       "ActionRequired",
+            "start_date":        "2025-02-14",
+            "end_date":          "2025-02-14",
+            "provider_nr":       112
+          }
+        ],
+
+        "enc_medications": [
+          {
+            "id":               991023401,
+            "ndc_id":           "57664037718",
+            "rxnorm_id":        "861007",
+            "medication_name":  "Metformin 500mg",
+            "dose":             "500",
+            "dose_unit":        "mg",
+            "route":            "Oral",
+            "schedule":         "BID",
+            "start_date":       "2025-02-14",
+            "stop_date":        "2025-02-16",
+            "prescribed_doctor":"Dr. Anna Chen",
+            "delete_status":    "n"
+          }
+        ],
+
+        "transport": [
+          {
+            "id":              7701,
+            "date":            "2025-02-14",
+            "mode":            "Rideshare",
+            "eligible_rides":  12,
+            "rides_used":      1,
+            "cost":            18.50,
+            "company":         "Lyft Health",
+            "pickup_address":  "123 Main St, Miami FL 33101",
+            "dropoff_address": "Regional Medical Center, Miami FL",
+            "map_data_status": "verified",
+            "notes":           "On time"
+          }
+        ],
+
+        "home_program": [
+          {
+            "id":                     3322,
+            "date_request":           "2025-02-18",
+            "date_of_appoint":        "2025-02-19",
+            "discharg_date":          "2025-02-20",
+            "status":                 "Completed",
+            "appointment_type":       "Home Visit",
+            "program_vendor":         "CareMore Health",
+            "received_visit_summary": true,
+            "notes":                  "Patient stable, follow-up in 2 weeks"
+          }
+        ],
+
+        "documents": [
+          {
+            "id":             8800,
+            "source":         "adt",
+            "pdf_path":       "/adt/records/9910234.pdf",
+            "created_date":   "2025-02-16",
+            "follow_up_date": "2025-02-16",
+            "queue_status":   null
+          }
+        ],
+
+        "care_plans": [
+          {
+            "id":                       7812,
+            "encounter_nr_terminating": null,
+            "plan_name":                "Diabetes Management",
+            "guideline_title":          "Diabetes Management",
+            "guideline_nr":             15,
+            "guideline_edition":        "2024",
+            "hsim":                     "DM-001",
+            "source":                   "MCG",
+            "status":                   "Active",
+            "created_date":             "2025-01-05",
+            "plan_start_date":          "2025-01-05",
+            "inactive_date":            "2025-12-31",
+            "assigned_cm":              "CM001",
+            "reassessment_days":        90,
+            "next_reassessment_date":   "2025-04-05",
+            "reassessment_overdue":     false,
+            "progress": {
+              "interventions": { "achieved": 3, "total": 5, "pct": 60 },
+              "barriers":      { "achieved": 1, "total": 2, "pct": 50 },
+              "goals":         { "achieved": 1, "total": 3, "pct": 33 }
+            },
+            "clinical_content": {
+              "risk_factors": "Obesity, Sedentary lifestyle",
+              "barriers":     "Transportation",
+              "goals":        "Reduce HbA1c below 7%",
+              "treatment":    "Lifestyle modification + Metformin"
+            }
+          }
+        ],
+
+        "communications": [
+          {
+            "id":            "REM-4421",
+            "reminder_name": "Post-discharge follow-up call",
+            "description":   "Check on patient after inpatient stay",
+            "category":      "Post-Discharge",
+            "reminder_date": "2025-02-18T09:00:00",
+            "created_date":  "2025-02-17",
+            "created_by":    "jsmith",
+            "status":        "Sent",
+            "read_status":   "read",
+            "source":        "CM",
+            "is_email":      false
+          }
+        ],
+
+        "audit": {
+          "care_status":   "Active",
+          "audit_status":  "not_audit",
+          "mos":           "TCM",
+          "mos_type":      "adt",
+          "tfu_numerator": 1,
+          "mif_exclusion": false,
+          "census_status": null
+        }
+      },
+
+      {
+        "id":              7723001,
+        "encounter_nr":    7723001,
+        "claim_ref_num":   "CLM-2025-002",
+        "source_system":   "mra1",
+        "enc_class_nr":    10,
+        "encounter_type":  "Office Visit",
+        "encounter_status":"closed",
+        "setting":         "Part B",
+        "pos":             11,
+        "pos_curr":        11,
+        "place_of_service":"Office",
+
+        "dates": {
+          "admission_date":      "2025-03-22",
+          "discharge_date":      "2025-03-22",
+          "length_of_stay_days": 0
+        },
+
+        "facility": {
+          "name":        "Metro Health Clinic",
+          "npi":         "1509876501",
+          "taxonomy":    "207R00000X",
+          "hospital_nr": 2001
+        },
+
+        "provider": {
+          "attending_name":    "Dr. Robert Jones",
+          "attending_npi":     "0987654321",
+          "provider_taxonomy": "207R00000X"
+        },
+
+        "admission": { "purpose": "Diabetes follow-up" },
+
+        "discharge": {
+          "disposition":  "Home",
+          "readmit_30d":  false
+        },
+
+        "claim": {
+          "clm_uniq_id":  "CMS-2025-7723001",
+          "clm_amt_paid": 185.00
+        },
+
+        "diagnoses": [
+          {
+            "id":               4483001,
+            "icd_code":         "E11.9",
+            "icd_desc":         "Type 2 diabetes mellitus without complications",
+            "onset_date":       "2025-03-22",
+            "problem_type":     "Principal",
+            "icd_order":        1,
+            "status":           "Active",
+            "hcc_number":       "19",
+            "hcc_score":        0.318,
+            "hcc_included":     true,
+            "is_comorbid":      false,
+            "agreement_status": "Agree",
+            "source":           "mra1"
+          }
+        ],
+
+        "procedures": [
+          {
+            "id":             "99213_2025-03-22",
+            "billing_code":   "99213",
+            "cpt_name":       "Office visit, established, moderate complexity",
+            "procedure_date": "2025-03-22"
+          }
+        ],
+
+        "risk_screenings": [],
+        "enc_medications": [],
+        "transport":       [],
+        "home_program":    [],
+        "documents":       [],
+        "care_plans":      [],
+        "communications":  [],
+
+        "audit": {
+          "care_status":   "Active",
+          "audit_status":  "not_audit",
+          "mos":           "CCMV",
+          "mos_type":      "mra1",
+          "tfu_numerator": 0,
+          "mif_exclusion": false
+        }
+      }
+    ],
+
+    "labs": [
+      {
+        "id":              88201,
+        "encounter_nr":    7723001,
+        "result_date":     "2025-03-10",
+        "item_id":         1042,
+        "loinc_num":       "4548-4",
+        "test_name":       "Hemoglobin A1c",
+        "result_value":    "7.8",
+        "result_unit":     "%",
+        "ref_range_low":   "4.0",
+        "ref_range_high":  "5.6",
+        "alert_flag":      "H",
+        "abnormal":        true,
+        "result_status":   "Final",
+        "ordered_by":      "Jones, Robert",
+        "specimen_type":   "Blood",
+        "collection_date": "2025-03-10"
+      },
+      {
+        "id":              88310,
+        "encounter_nr":    7723001,
+        "result_date":     "2025-03-10",
+        "item_id":         1088,
+        "loinc_num":       "2160-0",
+        "test_name":       "Creatinine",
+        "result_value":    "1.3",
+        "result_unit":     "mg/dL",
+        "ref_range_low":   "0.7",
+        "ref_range_high":  "1.2",
+        "alert_flag":      "H",
+        "abnormal":        true,
+        "result_status":   "Final",
+        "ordered_by":      "Jones, Robert",
+        "specimen_type":   "Blood",
+        "collection_date": "2025-03-10"
+      }
+    ],
+
+    "medications": [
+      {
+        "id":                 "57664037718_2025-01-15",
+        "ndc_id":             "57664037718",
+        "rxnorm_id":          "861007",
+        "medication_name":    "Metformin 500mg",
+        "generic_name":       "Metformin HCl",
+        "drug_class":         "Biguanide / Antidiabetic",
+        "schedule":           "BID",
+        "dosage_instruction": "Take 1 tablet by mouth twice daily with food",
+        "dose":               "500",
+        "dose_unit":          "mg",
+        "route":              "Oral",
+        "start_date":         "2025-01-15",
+        "fill_date":          "2025-01-15",
+        "stop_date":          null,
+        "active":             true,
+        "quantity":           60,
+        "quantity_unit":      "tablet",
+        "refills":            3,
+        "days_supply":        30,
+        "prescribed_doctor":  "Dr. Robert Jones",
+        "source":             "DrFirst",
+        "delete_status":      "n",
+        "risk_indicator":     null,
+        "reconciled_status":  "reconciled",
+        "refill_history": [
+          { "quantity": 60, "fill_date": "2025-01-15" },
+          { "quantity": 60, "fill_date": "2025-02-15" },
+          { "quantity": 60, "fill_date": "2025-03-15" }
+        ]
+      },
+      {
+        "id":                 "00074306158_2025-01-15",
+        "ndc_id":             "00074306158",
+        "rxnorm_id":          "1091641",
+        "medication_name":    "Lisinopril 10mg",
+        "generic_name":       "Lisinopril",
+        "drug_class":         "ACE Inhibitor / Antihypertensive",
+        "schedule":           "QD",
+        "dosage_instruction": "Take 1 tablet by mouth once daily",
+        "dose":               "10",
+        "dose_unit":          "mg",
+        "route":              "Oral",
+        "start_date":         "2025-01-15",
+        "fill_date":          "2025-01-15",
+        "stop_date":          null,
+        "active":             true,
+        "quantity":           30,
+        "quantity_unit":      "tablet",
+        "refills":            5,
+        "days_supply":        30,
+        "prescribed_doctor":  "Dr. Robert Jones",
+        "source":             "DrFirst",
+        "delete_status":      "n",
+        "risk_indicator":     null,
+        "reconciled_status":  "reconciled",
+        "refill_history": [
+          { "quantity": 30, "fill_date": "2025-01-15" },
+          { "quantity": 30, "fill_date": "2025-02-15" }
+        ]
+      }
+    ],
+
+    "assessments": [
+      {
+        "id":               101,
+        "tool":             "PHQ-9",
+        "date_completed":   "2025-03-15",
+        "acuity":           "Moderate",
+        "score":            "12",
+        "score_numeric":    12,
+        "score_threshold":  10,
+        "above_threshold":  true,
+        "completed_by":     "Jane Smith, RN",
+        "notes":            "Patient reports persistent low mood"
+      },
+      {
+        "id":               102,
+        "tool":             "GAD-7",
+        "date_completed":   "2025-03-15",
+        "acuity":           "Mild",
+        "score":            "6",
+        "score_numeric":    6,
+        "score_threshold":  10,
+        "above_threshold":  false,
+        "completed_by":     "Jane Smith, RN",
+        "notes":            "Mild anxiety, monitor"
+      }
+    ],
+
+    "alerts": [
+      {
+        "id":              224401,
+        "alert_type":      "Hedis/Quality",
+        "ref_description": "Annual Wellness Visit overdue",
+        "ref_detail":      "AWV-2025",
+        "ref_id":          "9912",
+        "added_date":      "2025-03-28",
+        "acked_date":      "2025-04-01",
+        "ack_by":          "jdoe",
+        "ack_notes":       "Scheduled for next month",
+        "resolved_date":   null,
+        "resolved_by":     null,
+        "status_code":     3,
+        "status_desc":     "Acknowledged",
+        "open":            true,
+        "version_no":      24
+      }
+    ],
+
+    "sdoh": {
+      "food_insecurity_flag":   true,
+      "transport_barrier_flag": false,
+      "housing_instability":    false,
+
+      "meal_plans": [
+        {
+          "id":                5501,
+          "meal_plan_label":   "Mediterranean Diet",
+          "meal_type":         "Diabetic Friendly",
+          "product_sku":       "MED-001",
+          "order_id":          "ORD-7812",
+          "order_status":      "Active",
+          "eligibility_status":"Eligible",
+          "start_date":        "2025-01-15",
+          "end_date":          "2025-04-15",
+          "created_date":      "2025-01-10",
+          "ship_frequency_id": 2,
+          "assigned_cm":       "cm_001",
+          "source":            "Portal"
+        }
+      ],
+
+      "reward_programs": [
+        {
+          "id":                 881,
+          "program":            "Healthy Steps",
+          "chronic_disease":    "Diabetes",
+          "criteria":           "Completed A1c test",
+          "status":             "Issued",
+          "date":               "2025-03-01",
+          "gift_card_amount":   25.00,
+          "gift_card_number":   "GC-2025-441",
+          "gift_card_received": true,
+          "address_verified":   true
+        }
+      ]
+    },
+
+    "emr_appointments": [
+      {
+        "id":                  78234,
+        "appointment_id":      "78234",
+        "encounter_date":      "2025-04-22",
+        "appointment_start":   "2025-04-22T09:30:00",
+        "closed_date":         "2025-04-22T10:15:00",
+        "encounter_type":      "Office Visit",
+        "visit_name":          "Annual Wellness Visit",
+        "provider_first_name": "Robert",
+        "provider_last_name":  "Jones",
+        "provider_phone":      "3055550101",
+        "patient_status":      "Checked Out",
+        "type":                "encounter",
+        "completed":           true
+      }
+    ],
+
+    "_meta": {
+      "created_at":       "2025-06-04T00:00:00Z",
+      "last_modified_at": "2025-06-04T00:00:00Z",
+      "source_db":        "mradb_prod",
+      "schema_version":   "2.0",
+      "cdc_sequence":     1001,
+      "trigger_source":   "adt_encounter"
+    }
+  }
+}

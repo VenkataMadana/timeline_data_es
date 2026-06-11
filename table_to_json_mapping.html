@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MySQL → Patient JSON Field Mapping</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;background:#f0f2f5;color:#222}
+h1{background:#1a3a5c;color:#fff;padding:12px 18px;font-size:16px}
+.sub{background:#1a3a5c;color:#aec8e8;padding:2px 18px 8px;font-size:11px}
+nav{background:#fff;border-bottom:2px solid #1a3a5c;padding:6px 10px;display:flex;flex-wrap:wrap;gap:4px;position:sticky;top:0;z-index:100;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+nav a{font-size:11px;padding:3px 8px;border:1px solid #c0cfe0;border-radius:3px;background:#f7f9fc;text-decoration:none;color:#1a3a5c;white-space:nowrap}
+nav a:hover{background:#dce8f5}
+.section{padding:14px 16px}
+.sec-hdr{background:#1a3a5c;color:#fff;padding:7px 12px;border-radius:4px 4px 0 0;font-size:12px;font-weight:700;font-family:monospace;display:flex;justify-content:space-between;align-items:center}
+.sec-hdr .badge{font-size:10px;background:#2d6a9f;padding:2px 8px;border-radius:8px;font-family:sans-serif}
+.tbl-wrap{background:#fff;border:1px solid #c8d8e8;border-top:none;border-radius:0 0 4px 4px;overflow-x:auto;margin-bottom:20px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{background:#edf3fa;color:#1a3a5c;font-weight:700;padding:5px 8px;text-align:left;border:1px solid #c8d8e8;white-space:nowrap}
+td{padding:4px 8px;border:1px solid #e0e8f0;vertical-align:top}
+tr:nth-child(even) td{background:#f8fafc}
+code{font-family:'Cascadia Code','Consolas',monospace;font-size:10px;background:#eef2f8;padding:1px 4px;border-radius:3px;white-space:nowrap}
+.json-path{color:#1a3a5c;font-weight:600;font-family:monospace;font-size:10px}
+.pk{background:#d4edda;color:#155724;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700}
+.fk{background:#fff3cd;color:#856404;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700}
+.computed{background:#e2d9f3;color:#4a235a;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700}
+.multi{background:#cfe2ff;color:#084298;font-size:9px;padding:1px 5px;border-radius:8px;font-weight:700}
+.grp{background:#e8f0fb;font-weight:700;color:#1a3a5c;font-size:10px}
+</style>
+</head>
+<body>
+<h1>MySQL → Patient JSON: Field-Level Mapping</h1>
+<div class="sub">Source: mradb_prod &nbsp;|&nbsp; Target: patient_value_care document &nbsp;|&nbsp; CDC key: origid &nbsp;|&nbsp; Correlation: account_id</div>
+
+<nav>
+<a href="#root">Root / Identity</a>
+<a href="#demographics">Demographics</a>
+<a href="#contact">Contact</a>
+<a href="#care_team">Care Team</a>
+<a href="#enrollment">Enrollment</a>
+<a href="#chronic">Chronic Conditions</a>
+<a href="#raf">RAF Profile</a>
+<a href="#hcc">HCC Capture</a>
+<a href="#risk">Risk Scores</a>
+<a href="#uamcc">UAMCC Details</a>
+<a href="#uamcc_conditions">UAMCC Conditions</a>
+<a href="#adherence">Med Adherence</a>
+<a href="#hedis">HEDIS</a>
+<a href="#enc">Encounters (spine)</a>
+<a href="#hie_feed">↳ HIE Feed</a>
+<a href="#cclf_visits">↳ CCLF Patient Visits</a>
+<a href="#visits">↳ Visits (6-branch UNION)</a>
+<a href="#outpatient">↳ Outpatient</a>
+<a href="#diagnoses">↳ Diagnoses</a>
+<a href="#procedures">↳ Procedures</a>
+<a href="#screenings">↳ Risk Screenings</a>
+<a href="#docs">↳ Documents</a>
+<a href="#transport">↳ Transport</a>
+<a href="#homeprog">↳ Home Program</a>
+<a href="#encmeds">↳ Enc. Medications</a>
+<a href="#labs">Labs (Active)</a>
+<a href="#meds">Medications</a>
+<a href="#assessments">Assessments</a>
+<a href="#careplans">Care Plans</a>
+<a href="#alerts">Alerts</a>
+<a href="#comms">Communications</a>
+<a href="#sdoh">SDOH</a>
+<a href="#emrappt">EMR Appointments</a>
+</nav>
+
+<div class="section">
+
+<!-- ── ROOT ── -->
+<div id="root" class="sec-hdr">patient{} — Root / Identity <span class="badge">Source: adt_patient</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">patient.id</td><td><code>adt_patient</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="pk">PK / Doc Key</span></td><td>Direct copy</td><td>Document identity — Kafka compacted topic key</td></tr>
+<tr><td class="json-path">patient.origid</td><td><code>adt_patient</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>System internal patient ID, never changes</td></tr>
+<tr><td class="json-path">patient.account_id</td><td><code>adt_patient</code></td><td><code>account_id</code></td><td>varchar(60)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Universal cross-section join key — carried on every sub-record</td></tr>
+<tr><td class="json-path">patient.mbi</td><td><code>adt_patient</code></td><td><code>mra_clm_refer_m01</code></td><td>varchar(50)</td><td>—</td><td>Direct copy (MBI from CMS claim reference)</td><td>Medicare Beneficiary Identifier for CMS reporting</td></tr>
+</table></div>
+
+<!-- ── DEMOGRAPHICS ── -->
+<div id="demographics" class="sec-hdr">patient.demographics{} <span class="badge">Source: adt_patient</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">demographics.last_name</td><td><code>adt_patient</code></td><td><code>lastname</code></td><td>varchar(64)</td><td>—</td><td>Direct copy</td><td>Member identification</td></tr>
+<tr><td class="json-path">demographics.first_name</td><td><code>adt_patient</code></td><td><code>firstname</code></td><td>varchar(64)</td><td>—</td><td>Direct copy</td><td>Member identification</td></tr>
+<tr><td class="json-path">demographics.middle_name</td><td><code>adt_patient</code></td><td><code>middlename</code></td><td>varchar(64)</td><td>—</td><td>Direct copy</td><td>Member identification</td></tr>
+<tr><td class="json-path">demographics.dob</td><td><code>adt_patient</code></td><td><code>birthdate</code></td><td>date</td><td>—</td><td>ISO-8601 (YYYY-MM-DD)</td><td>Age calculation, eligibility</td></tr>
+<tr><td class="json-path">demographics.sex</td><td><code>adt_patient</code></td><td><code>sex</code></td><td>varchar(16)</td><td>—</td><td>CASE M→Male F→Female</td><td>Clinical stratification</td></tr>
+<tr><td class="json-path">demographics.sex_at_birth</td><td><code>adt_patient</code></td><td><code>sex_at_birth</code></td><td>varchar(64)</td><td>—</td><td>Direct copy</td><td>Clinical / equity reporting</td></tr>
+<tr><td class="json-path">demographics.race</td><td><code>adt_patient</code></td><td><code>race</code></td><td>varchar(80)</td><td>—</td><td>Direct copy</td><td>Health equity stratification</td></tr>
+<tr><td class="json-path">demographics.ethnicity</td><td><code>adt_patient</code></td><td><code>ethnicgroup</code></td><td>varchar(64)</td><td>—</td><td>Direct copy</td><td>Health equity stratification</td></tr>
+<tr><td class="json-path">demographics.language</td><td><code>adt_patient</code></td><td><code>language</code></td><td>varchar(30)</td><td>—</td><td>Direct copy</td><td>Care gap — interpreter need</td></tr>
+<tr><td class="json-path">demographics.civil_status</td><td><code>adt_patient</code></td><td><code>civil_status</code></td><td>varchar(35)</td><td>—</td><td>Direct copy</td><td>Social support context</td></tr>
+<tr><td class="json-path">demographics.blood_group</td><td><code>adt_patient</code></td><td><code>blood_group</code></td><td>char(2)</td><td>—</td><td>Direct copy</td><td>Clinical safety</td></tr>
+<tr><td class="json-path">demographics.dnr_status</td><td><code>adt_patient</code></td><td><code>dnr_status</code></td><td>varchar(150)</td><td>—</td><td>Direct copy</td><td>Advance directive — critical for care decisions</td></tr>
+</table></div>
+
+<!-- ── CONTACT ── -->
+<div id="contact" class="sec-hdr">patient.contact{} <span class="badge">Source: adt_patient</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">contact.phone_primary</td><td><code>adt_patient</code></td><td><code>phone_1_nr</code> + <code>phone_1_code</code></td><td>varchar(35)</td><td>—</td><td>CONCAT with formatting</td><td>Outreach / care management contact</td></tr>
+<tr><td class="json-path">contact.phone_secondary</td><td><code>adt_patient</code></td><td><code>phone_2_nr</code></td><td>varchar(35)</td><td>—</td><td>Direct copy</td><td>Secondary outreach</td></tr>
+<tr><td class="json-path">contact.cellphone</td><td><code>adt_patient</code></td><td><code>cellphone_2_nr</code></td><td>varchar(35)</td><td>—</td><td>Direct copy</td><td>SMS outreach eligibility</td></tr>
+<tr><td class="json-path">contact.email</td><td><code>adt_patient</code></td><td><code>email</code></td><td>varchar(60)</td><td>—</td><td>Direct copy</td><td>Digital engagement</td></tr>
+<tr><td class="json-path">contact.no_email</td><td><code>adt_patient</code></td><td><code>no_email</code></td><td>tinyint(1)</td><td>—</td><td>Cast to boolean</td><td>Opt-out flag — suppress email outreach</td></tr>
+<tr><td class="json-path">contact.address.street</td><td><code>adt_patient</code></td><td><code>addr_str</code></td><td>varchar(150)</td><td>—</td><td>Direct copy</td><td>Transport routing, meal delivery</td></tr>
+<tr><td class="json-path">contact.address.city</td><td><code>adt_patient</code></td><td><code>addr_citytown_name</code></td><td>varchar(150)</td><td>—</td><td>Direct copy</td><td>Geographic stratification</td></tr>
+<tr><td class="json-path">contact.address.state</td><td><code>adt_patient</code></td><td><code>addr_state</code></td><td>char(2)</td><td>—</td><td>Direct copy</td><td>Geographic stratification</td></tr>
+<tr><td class="json-path">contact.address.zip</td><td><code>adt_patient</code></td><td><code>addr_zip</code></td><td>varchar(15)</td><td>—</td><td>Direct copy</td><td>ADI scoring, social risk</td></tr>
+<tr><td class="json-path">contact.address.verified</td><td><code>adt_patient</code></td><td><code>addr_is_valid</code></td><td>tinyint(1)</td><td>—</td><td>Cast to boolean</td><td>Delivery reliability for SDOH programs</td></tr>
+<tr><td class="json-path">contact.emergency_contact.name</td><td><code>adt_patient</code></td><td><code>contact_person</code></td><td>varchar(255)</td><td>—</td><td>Direct copy</td><td>Emergency outreach</td></tr>
+<tr><td class="json-path">contact.emergency_contact.relation</td><td><code>adt_patient</code></td><td><code>contact_relation</code></td><td>varchar(25)</td><td>—</td><td>Direct copy</td><td>Social support context</td></tr>
+<tr><td class="json-path">contact.emergency_contact.phone</td><td><code>adt_patient</code></td><td><code>contact_person_phone</code></td><td>varchar(50)</td><td>—</td><td>Direct copy</td><td>Emergency outreach</td></tr>
+</table></div>
+
+<!-- ── CARE TEAM ── -->
+<div id="care_team" class="sec-hdr">patient.care_team{} <span class="badge">Source: adt_patient + adt_encounter</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">care_team.dce_provider</td><td><code>adt_patient</code></td><td><code>sp_dr_1</code></td><td>varchar(120)</td><td>—</td><td>Direct copy</td><td>DCE attributed provider — key for ACO reporting</td></tr>
+<tr><td class="json-path">care_team.dce_provider_npi</td><td><code>adt_patient</code></td><td><code>dce_prov_npi_nr</code></td><td>varchar(25)</td><td>—</td><td>Direct copy</td><td>NPI for provider attribution</td></tr>
+<tr><td class="json-path">care_team.dce_group</td><td><code>adt_patient</code></td><td><code>facility_name</code></td><td>varchar(250)</td><td>—</td><td>Direct copy</td><td>DCE group attribution</td></tr>
+<tr><td class="json-path">care_team.dce_group_id</td><td><code>adt_patient</code></td><td><code>facility_nr</code></td><td>bigint</td><td>—</td><td>Direct copy</td><td>Group ID for roster management</td></tr>
+<tr><td class="json-path">care_team.primary_doctor</td><td><code>adt_patient</code></td><td><code>primary_doctor</code></td><td>varchar(120)</td><td>—</td><td>Direct copy</td><td>PCP attribution for HEDIS, AWV</td></tr>
+<tr><td class="json-path">care_team.last_pcp_visit</td><td><code>adt_patient</code></td><td><code>Last_PCP_Visit_Date</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>Identifies overdue PCP visits</td></tr>
+<tr><td class="json-path">care_team.next_pcp_visit</td><td><code>adt_patient</code></td><td><code>Next_Office_Visit</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>Scheduling gap detection</td></tr>
+<tr><td class="json-path">care_team.market_id</td><td><code>adt_encounter</code></td><td><code>market_id</code></td><td>int</td><td>—</td><td>From most recent encounter</td><td>Market-level analytics</td></tr>
+<tr><td class="json-path">care_team.market_name</td><td><code>adt_encounter</code></td><td><code>market_name</code></td><td>varchar(100)</td><td>—</td><td>From most recent encounter</td><td>Market-level analytics</td></tr>
+<tr><td class="json-path">care_team.member_type</td><td><code>transportation_benefit</code></td><td><code>member_type</code></td><td>varchar</td><td>—</td><td>Direct copy (Medicare/Medicaid)</td><td>Benefit eligibility determination</td></tr>
+</table></div>
+
+<!-- ── ENROLLMENT ── -->
+<div id="enrollment" class="sec-hdr">patient.enrollment{} <span class="badge">Source: adt_patient</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">enrollment.status</td><td><code>adt_patient</code></td><td><code>status</code></td><td>varchar(20)</td><td>—</td><td>Direct copy</td><td>Active/inactive — drives roster inclusion</td></tr>
+<tr><td class="json-path">enrollment.align_status_code</td><td><code>adt_patient</code></td><td><code>ALIG_STATUS_CODE</code></td><td>varchar(5)</td><td>—</td><td>Direct copy</td><td>CMS alignment status for ACO attribution</td></tr>
+<tr><td class="json-path">enrollment.ccm_enabled</td><td><code>adt_patient</code></td><td><code>is_ccm_enabled</code></td><td>int</td><td>—</td><td>Cast to boolean</td><td>CCM billing eligibility</td></tr>
+<tr><td class="json-path">enrollment.ccm_level</td><td><code>adt_patient</code></td><td><code>ccm_level</code></td><td>int</td><td>—</td><td>Direct copy</td><td>CCM complexity tier — drives reimbursement</td></tr>
+<tr><td class="json-path">enrollment.ccm_active_date</td><td><code>adt_patient</code></td><td><code>ccm_activedate</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>CCM enrollment start for billing</td></tr>
+<tr><td class="json-path">enrollment.ccm_inactive_date</td><td><code>adt_patient</code></td><td><code>ccm_inactivedate</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>CCM disenrollment tracking</td></tr>
+<tr><td class="json-path">enrollment.consent_on_file</td><td><code>adt_patient</code></td><td><code>consent_onfile</code></td><td>int</td><td>—</td><td>Cast to boolean</td><td>Required for CCM billing — compliance gate</td></tr>
+<tr><td class="json-path">enrollment.dr_first_status</td><td><code>adt_patient</code></td><td><code>dr_first_status</code></td><td>varchar(255)</td><td>—</td><td>Direct copy</td><td>eRx activation status</td></tr>
+<tr><td class="json-path">enrollment.high_utilizer</td><td><code>adt_patient</code></td><td><code>is_alert_inc_alerts</code> / <code>adt_encounter.high_utilizer</code></td><td>tinyint</td><td>—</td><td>Cast to boolean</td><td>High-cost patient flag — care management priority</td></tr>
+<tr><td class="json-path">enrollment.long_term_care</td><td><code>adt_patient</code></td><td><code>long_term_care</code></td><td>tinyint(1)</td><td>—</td><td>Cast to boolean</td><td>LTC patients need different care pathways</td></tr>
+<tr><td class="json-path">enrollment.inactive_date</td><td><code>adt_patient</code></td><td><code>inactive_date</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>Disenrollment tracking</td></tr>
+<tr><td class="json-path">enrollment.inactive_reason</td><td><code>adt_patient</code></td><td><code>inactive_reason</code></td><td>varchar(80)</td><td>—</td><td>Direct copy</td><td>Retention analysis</td></tr>
+</table></div>
+
+<!-- ── CHRONIC CONDITIONS ── -->
+<div id="chronic" class="sec-hdr">patient.chronic_conditions[] <span class="badge">Source: cclf_encounter_icd_codes + mra_hcc_coefficients</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>cclf_encounter_icd_codes</code></td><td><code>nr</code></td><td>bigint unsigned</td><td><span class="pk">PK</span></td><td>Direct copy — source table auto-increment PK; immutable, never recomputed</td><td>CDC identity for chronic condition record — stable internal key per ICD row</td></tr>
+<tr><td class="json-path">[].account_id</td><td><code>adt_patient</code></td><td><code>account_id</code></td><td>varchar(60)</td><td><span class="fk">Correlation</span></td><td>Carried from patient root</td><td>Cross-section correlation without joins</td></tr>
+<tr><td class="json-path">[].icd_code</td><td><code>cclf_encounter_icd_codes</code></td><td><code>diagnosis_code</code></td><td>varchar(50)</td><td>—</td><td>Direct copy — GROUP BY patient_id + code</td><td>Primary clinical identifier for condition</td></tr>
+<tr><td class="json-path">[].icd_desc</td><td><code>cclf_encounter_icd_codes</code></td><td><code>diagnosis_desc</code></td><td>varchar(255)</td><td>—</td><td>MAX() — most recent description</td><td>Human-readable condition label</td></tr>
+<tr><td class="json-path">[].hcc_number</td><td><code>mra_hcc_coefficients</code></td><td><code>hcc</code></td><td>varchar</td><td>—</td><td>JOIN on diagnosis_code</td><td>HCC mapping — drives RAF score</td></tr>
+<tr><td class="json-path">[].hcc_score</td><td><code>cclf_encounter_icd_codes</code></td><td><code>hcc_score</code></td><td>double(20,4)</td><td>—</td><td>Direct copy</td><td>Individual diagnosis RAF weight</td></tr>
+<tr><td class="json-path">[].condition_category</td><td><code>mra_uamcc_details</code></td><td><code>condition_category</code></td><td>varchar</td><td>—</td><td>Lookup by diagnosis_code</td><td>UAMCC condition grouping for value-care programs</td></tr>
+<tr><td class="json-path">[].is_comorbid</td><td><code>cclf_encounter_icd_codes</code></td><td><code>is_comorbid</code></td><td>tinyint(1)</td><td>—</td><td>Cast to boolean</td><td>Comorbidity weighting for risk stratification</td></tr>
+<tr><td class="json-path">[].problem_type</td><td><code>cclf_encounter_icd_codes</code></td><td><code>problem_type</code></td><td>varchar(20)</td><td>—</td><td>Direct copy (Principal/Secondary)</td><td>Clinical prioritization</td></tr>
+<tr><td class="json-path">[].status</td><td><code>cclf_encounter_icd_codes</code></td><td><code>status</code></td><td>varchar(12)</td><td>—</td><td>Direct copy (Active/Inactive)</td><td>Active problem list filtering</td></tr>
+<tr><td class="json-path">[].first_onset_date</td><td><code>cclf_encounter_icd_codes</code></td><td><code>MIN(onset_date)</code></td><td>datetime</td><td>—</td><td>MIN() per patient+code, ISO-8601</td><td>Chronicity — duration drives risk models</td></tr>
+<tr><td class="json-path">[].last_seen_date</td><td><code>cclf_encounter_icd_codes</code></td><td><code>MAX(onset_date)</code></td><td>datetime</td><td>—</td><td>MAX() per patient+code, ISO-8601</td><td>Recency — staleness detection for HCC recapture</td></tr>
+<tr><td class="json-path">[].encounter_count</td><td><code>cclf_encounter_icd_codes</code></td><td><code>COUNT(id)</code></td><td>—</td><td>—</td><td><span class="computed">Computed</span> — count per patient+code</td><td>Frequency — chronic vs acute classification</td></tr>
+<tr><td class="json-path">[].month_frequency</td><td><code>cclf_encounter_icd_codes</code></td><td><code>GROUP_CONCAT per month</code></td><td>—</td><td>—</td><td><span class="computed">Computed</span> — month-year-count pattern</td><td>Seasonal/trend pattern for care planning</td></tr>
+<tr><td class="json-path">[].snomed_cid</td><td><code>cclf_encounter_icd_codes</code></td><td><code>SNOMED_CID</code></td><td>varchar(255)</td><td>—</td><td>Direct copy</td><td>Interoperability with FHIR/HL7 systems</td></tr>
+<tr><td class="json-path">[].snomed_fsn</td><td><code>cclf_encounter_icd_codes</code></td><td><code>SNOMED_FSN</code></td><td>varchar(255)</td><td>—</td><td>Direct copy</td><td>Interoperability with FHIR/HL7 systems</td></tr>
+<tr><td class="json-path">[].agreement_status</td><td><code>cclf_encounter_icd_codes</code></td><td><code>agreement_status</code></td><td>varchar(20)</td><td>—</td><td>Direct copy</td><td>Provider agreement — HCC audit trail</td></tr>
+<tr><td class="json-path">[].ccm_tracked</td><td><code>cclf_encounter_icd_codes</code></td><td><code>ccm_track</code></td><td>tinyint(1)</td><td>—</td><td>Cast to boolean</td><td>CCM billing condition inclusion flag</td></tr>
+<tr><td class="json-path">[].source</td><td><code>cclf_encounter_icd_codes</code></td><td><code>source</code></td><td>varchar(20)</td><td>—</td><td>Direct copy (cclf/adt/mra1)</td><td>Data lineage — claim vs EMR source</td></tr>
+</table></div>
+
+<!-- ── RAF PROFILE ── -->
+<div id="raf" class="sec-hdr">patient.raf_profile{} <span class="badge">Source: mra_raf_patient + mra_raf_version_details</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">raf_profile.snapshotDate</td><td><code>mra_raf_patient</code></td><td><code>year</code></td><td>int</td><td>—</td><td>DATE_FORMAT(CONCAT(year,'-12-31'),'%Y-%m-%d') — last day of measurement year; routing-config: mra_raf_patient.YEAR</td><td>Measurement year end date — RAF snapshot temporal anchor</td></tr>
+<tr><td class="json-path">raf_profile.pmra.detail_score</td><td><code>mra_raf_patient</code></td><td><code>total_score</code></td><td>decimal</td><td>—</td><td>WHERE type='pmra', latest month ROW_NUMBER()</td><td>Prospective MRA score — revenue projection</td></tr>
+<tr><td class="json-path">raf_profile.pmra.initial_score</td><td><code>mra_raf_patient</code></td><td><code>initial_score</code></td><td>decimal</td><td>—</td><td>WHERE type='pmra', latest month</td><td>Baseline before interventions</td></tr>
+<tr><td class="json-path">raf_profile.pmra.month</td><td><code>mra_raf_patient</code></td><td><code>month</code></td><td>int</td><td>—</td><td>Latest month per ROW_NUMBER()</td><td>RAF snapshot recency indicator</td></tr>
+<tr><td class="json-path">raf_profile.prmra.detail_score</td><td><code>mra_raf_patient</code></td><td><code>total_score</code></td><td>decimal</td><td>—</td><td>WHERE type='prmra', latest month</td><td>Prospective RAF — primary payment model</td></tr>
+<tr><td class="json-path">raf_profile.rmra.detail_score</td><td><code>mra_raf_patient</code></td><td><code>total_score</code></td><td>decimal</td><td>—</td><td>WHERE type='rmra', latest month</td><td>Retrospective MRA — reconciliation score</td></tr>
+<tr><td class="json-path">raf_profile.raf_version</td><td><code>mra_raf_version_details</code></td><td><code>version</code></td><td>int</td><td>—</td><td>Direct copy (28)</td><td>HCC model version — v24/v28 transition tracking</td></tr>
+</table></div>
+
+<!-- ── HCC CAPTURE ── -->
+<div id="hcc" class="sec-hdr">patient.hcc_capture{} <span class="badge">Source: mra_scorecard_alerts (type='HCC') → sp_load_hcc_summary_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">hcc_capture.patientId</td><td><code>mra_scorecard_alerts</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">hcc_capture.refDate</td><td><code>mra_scorecard_alerts</code></td><td><code>added_date</code></td><td>date</td><td>—</td><td>ISO-8601 '%Y-%m-%d'; routing-config: mra_scorecard_alerts.added_date — replaces YEAR(ref_date) int</td><td>HCC capture reference date — full date replaces year-only int</td></tr>
+<tr><td class="json-path">hcc_capture.version</td><td><code>mra_scorecard_alerts</code></td><td><code>version_no</code></td><td>varchar</td><td>—</td><td>Direct copy; always 24</td><td>HCC model version — v24 (v28 migration tracking)</td></tr>
+<tr><td class="json-path">hcc_capture.eligibleHccs</td><td><code>mra_scorecard_alerts (CTE)</code></td><td><code>COUNT(*) of prior-year HCCs</code></td><td>—</td><td>—</td><td><span class="computed">Computed</span> — prior-year HCC count per patient</td><td>Denominator — total HCCs at risk for recapture</td></tr>
+<tr><td class="json-path">hcc_capture.capturedHccs</td><td><code>mra_scorecard_alerts (CTE)</code></td><td><code>SUM(is_captured)</code></td><td>—</td><td>—</td><td><span class="computed">Computed</span> — HCCs matched to current year claims</td><td>Numerator — HCCs successfully recaptured</td></tr>
+<tr><td class="json-path">hcc_capture.hccCapturePct</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="computed">Computed</span>: capturedHccs / eligibleHccs × 100; ROUND(1)</td><td>KPI — HCC capture rate % for ACO REACH performance</td></tr>
+<tr><td class="json-path">hcc_capture.gapHccs</td><td><code>mra_scorecard_alerts</code></td><td><code>ref_detail</code></td><td>varchar</td><td>—</td><td>Array of uncaptured HCC codes from ref_detail</td><td>Action list — drives care manager recapture outreach</td></tr>
+</table></div>
+
+<!-- ── RISK SCORES ── -->
+<div id="risk" class="sec-hdr">patient.risk_scores{} <span class="badge">Source: refactor_ai + dc_bene_alignment_rostr_m01 → sp_load_scores_json_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">risk_scores.patientId</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>mm_curr_mbi_id</code></td><td>varchar</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient MBI link — CMS roster correlation</td></tr>
+<tr><td class="json-path">risk_scores.rosterDate</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>mm_date</code></td><td>date</td><td>—</td><td>ISO-8601 '%Y-%m-%d'; routing-config: dc_bene_alignment_rostr_m01.mm_date — replaces mm_year int</td><td>CMS roster date — full date replaces year-only int; use DATE_FORMAT(mm_date,'%Y') for year-level grouping</td></tr>
+<tr><td class="json-path">risk_scores.uha[].id</td><td><code>refactor_ai</code></td><td><code>nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy — source table auto-increment PK; immutable; index_date is a data field, not an identity key</td><td>CDC identity per UHA prediction row — stable internal key</td></tr>
+<tr><td class="json-path">risk_scores.uha[].indexDate</td><td><code>refactor_ai</code></td><td><code>index_date</code></td><td>date</td><td>—</td><td>WHERE report_type_id='1'; ISO-8601</td><td>UHA prediction run date — prediction recency</td></tr>
+<tr><td class="json-path">risk_scores.uha[].prediction</td><td><code>refactor_ai</code></td><td><code>prediction</code></td><td>float</td><td>—</td><td>WHERE report_type_id='1'</td><td>UHA risk probability — drives outreach intensity</td></tr>
+<tr><td class="json-path">risk_scores.uha[].percentile</td><td><code>refactor_ai</code></td><td><code>percentile</code></td><td>int</td><td>—</td><td>WHERE report_type_id='1'</td><td>Population rank — stratification tier assignment</td></tr>
+<tr><td class="json-path">risk_scores.chf[].id</td><td><code>refactor_ai</code></td><td><code>nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy — source table auto-increment PK; immutable; index_date is a data field, not an identity key</td><td>CDC identity per CHF prediction row — stable internal key</td></tr>
+<tr><td class="json-path">risk_scores.chf[].indexDate</td><td><code>refactor_ai</code></td><td><code>index_date</code></td><td>date</td><td>—</td><td>WHERE report_type_id='2'; ISO-8601</td><td>CHF prediction run date</td></tr>
+<tr><td class="json-path">risk_scores.chf[].prediction</td><td><code>refactor_ai</code></td><td><code>prediction</code></td><td>float</td><td>—</td><td>WHERE report_type_id='2'</td><td>CHF readmission risk — targeted intervention trigger</td></tr>
+<tr><td class="json-path">risk_scores.chf[].percentile</td><td><code>refactor_ai</code></td><td><code>percentile</code></td><td>int</td><td>—</td><td>WHERE report_type_id='2'</td><td>CHF population rank — risk tier classification</td></tr>
+<tr><td class="json-path">risk_scores.rosterScores.avgAdiScore</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>(mrisk_adi_natrank + mrisk_adi_staterank) / 2</code></td><td>float</td><td>—</td><td><span class="computed">Computed</span> average</td><td>Area Deprivation Index — social risk / equity metric</td></tr>
+<tr><td class="json-path">risk_scores.rosterScores.cdiScore</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>mrisk_cdi_natrank</code></td><td>float</td><td>—</td><td>Direct copy</td><td>Chronic Disease Index — clinical risk weight</td></tr>
+<tr><td class="json-path">risk_scores.rosterScores.equityScore</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>mrisk_eqty_score</code></td><td>float</td><td>—</td><td>Direct copy</td><td>Equity score — CMS AHEAD model compliance</td></tr>
+</table></div>
+
+<!-- ── UAMCC DETAILS ── -->
+<div id="uamcc" class="sec-hdr">patient.uamcc_details[] <span class="badge">Source: mra_uamcc_details + bt_static.uamcc_cohort → sp_load_uamcc_details_json_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>mra_uamcc_details</code></td><td><code>MAX(nr)</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>MAX(nr) per origid + condition_category + diagnosis_code</td><td>CDC identity — dedup per patient + condition + code</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>mra_uamcc_details</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient link — join back to patient root</td></tr>
+<tr><td class="json-path">[].serviceDate</td><td><code>mra_uamcc_details</code></td><td><code>MAX(service_date)</code></td><td>date</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Most recent service date — condition recency for program eligibility</td></tr>
+<tr><td class="json-path">[].conditionCategory</td><td><code>mra_uamcc_details</code></td><td><code>condition_category</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>UAMCC condition bucket — ACO REACH program enrollment</td></tr>
+<tr><td class="json-path">[].diagnosisCode</td><td><code>mra_uamcc_details</code></td><td><code>diagnosis_code</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>ICD code driving UAMCC category membership</td></tr>
+<tr><td class="json-path">[].diagnosisDesc</td><td><code>mra_uamcc_details</code></td><td><code>diagnosis_desc</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Human-readable condition label</td></tr>
+<tr><td class="json-path">[].providerNpi</td><td><code>mra_uamcc_details</code></td><td><code>prov_npi_nr</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Rendering provider NPI — network analysis</td></tr>
+<tr><td class="json-path">[].providerName</td><td><code>mra_uamcc_details</code></td><td><code>prov_name</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Provider name — care team display</td></tr>
+<tr><td class="json-path">[].participatingPhysician</td><td><code>mra_uamcc_details</code></td><td><code>partg_phys</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Participating physician attribution — ACO attribution</td></tr>
+<tr><td class="json-path">[].providerTaxonomy</td><td><code>mra_uamcc_details</code></td><td><code>prov_taxonomy</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Provider taxonomy — specialist vs PCP classification</td></tr>
+<tr><td class="json-path">[].facilityName</td><td><code>mra_uamcc_details</code></td><td><code>facility_name</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Facility name — network leakage analysis</td></tr>
+<tr><td class="json-path">[].claimSource</td><td><code>mra_uamcc_details</code></td><td><code>claim_source</code></td><td>varchar</td><td>—</td><td>Direct copy (CCLF/ADT)</td><td>Data lineage — claim vs EMR source</td></tr>
+<tr><td class="json-path">[].claimType</td><td><code>mra_uamcc_details</code></td><td><code>claim_type</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Claim type — Part A/B/DME classification</td></tr>
+<tr><td class="json-path">[].version</td><td><code>mra_uamcc_details</code></td><td><code>version</code></td><td>int</td><td>—</td><td>MAX(version) per patient subquery</td><td>Latest UAMCC version — versioned data cohort</td></tr>
+<tr><td class="json-path">[].cohortPriority</td><td><code>bt_static.uamcc_cohort</code></td><td><code>priority</code></td><td>int</td><td>—</td><td>JOIN on diagnosis_code; COALESCE(priority, 999)</td><td>Condition priority — determines care program sequencing</td></tr>
+<tr><td class="json-path">[].cohortActiveDate</td><td><code>bt_static.uamcc_cohort</code></td><td><code>active_date</code></td><td>date</td><td>—</td><td>DATE_FORMAT; IFNULL → '2020-01-01'</td><td>Cohort effective start date — eligibility window</td></tr>
+<tr><td class="json-path">[].cohortInactiveDate</td><td><code>bt_static.uamcc_cohort</code></td><td><code>inactive_date</code></td><td>date</td><td>—</td><td>DATE_FORMAT; IFNULL → '2050-12-31'</td><td>Cohort expiry date — program enrollment gate</td></tr>
+</table></div>
+
+<!-- ── UAMCC CONDITIONS SUMMARY ── -->
+<div id="uamcc_conditions" class="sec-hdr">patient.uamcc_conditions[] <span class="badge">Source: qip_uamcc_lambda + mra_uamcc_details → sp_load_uamcc_summary_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].patientId</td><td><code>qip_uamcc_lambda</code> / <code>mra_uamcc_details</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy — branch A: qip_uamcc_lambda; branch B: mra_uamcc_details</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].periodDate</td><td><code>mra_uamcc_details</code></td><td><code>service_date</code></td><td>date</td><td>—</td><td>ISO-8601 '%Y-%m-%d'; routing-config: mra_uamcc_details.service_date — replaces j_year int; use DATE_FORMAT(service_date,'%Y') for year-level grouping</td><td>UAMCC service date — full date replaces year-only int; program year derivable from date</td></tr>
+<tr><td class="json-path">[].uamccConditions</td><td><code>qip_uamcc_lambda</code> (condition flags)</td><td><code>condition_* flags</code></td><td>tinyint</td><td>—</td><td>GROUP_CONCAT(condition_name) where flag=1; IFNULL → 'Unknown'</td><td>Qualifying condition names — ACO REACH UAMCC eligibility</td></tr>
+<tr><td class="json-path">[].uamccCodes</td><td><code>mra_uamcc_details</code></td><td><code>LEFT(diagnosis_code, 3)</code></td><td>varchar</td><td>—</td><td>GROUP_CONCAT distinct 3-char ICD prefixes; IFNULL → 'Unknown'</td><td>ICD chapter-level grouping — condition category search</td></tr>
+</table></div>
+
+<!-- ── MED ADHERENCE ── -->
+<div id="adherence" class="sec-hdr">patient.medication_adherence{} <span class="badge">→ Merged into patient.medications[] section — sp_load_patients_medications_summary_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">medication_adherence.patientId</td><td><code>drfirst_patient_medications</code></td><td><code>patientid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">medication_adherence.measurementPeriodStart</td><td><code>drfirst_patient_medications</code></td><td><code>start_date</code></td><td>date</td><td>—</td><td>ISO-8601 '%Y-%m-%d'; routing-config: drfirst_patient_medications.start_date — replaces param_year int; use DATE_FORMAT(start_date,'%Y') for year-level grouping</td><td>Measurement period start date — PDC window anchor; full date replaces year-only param</td></tr>
+<tr><td class="json-path">medication_adherence.coveredDays</td><td><code>drfirst_patient_medications</code></td><td><code>LEAST(SUM(quantity), 365)</code></td><td>varchar</td><td>—</td><td><span class="computed">Computed</span> — SUM capped at 365; WHERE fill_date IS NOT NULL AND delete_status='n'</td><td>PDC numerator — days of supply covered in period</td></tr>
+<tr><td class="json-path">medication_adherence.rxAdherencePct</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="computed">Computed</span>: coveredDays / 365 × 100; ROUND(2)</td><td>HEDIS PDC measure — STAR rating input</td></tr>
+</table></div>
+
+<!-- ── HEDIS ── -->
+<div id="hedis" class="sec-hdr">patient.hedis_measures[] <span class="badge">Source: flowsheet_save_data + flowsheet_save_data_det + flowsheet_rows → sp_load_hedis_quality_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>flowsheet_save_data</code></td><td><code>nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy — source table auto-increment PK; immutable; created_date and frows_nr are data fields, not the identity key</td><td>CDC identity per HEDIS measure row — stable internal key</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>flowsheet_save_data</code></td><td><code>orig_id</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].measureDate</td><td><code>flowsheet_save_data</code></td><td><code>created_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT(created_date,'%Y-%m-%d'); routing-config: flowsheet_save_data.created_date — replaces YEAR() int; WHERE fgrid_nr='31'</td><td>HEDIS measure recorded date — full date replaces year-only int; use DATE_FORMAT(created_date,'%Y') for annual compliance window</td></tr>
+<tr><td class="json-path">[].frowsNr</td><td><code>flowsheet_rows</code></td><td><code>frows_nr</code></td><td>int</td><td>—</td><td>JOIN flowsheet_save_data_det → flowsheet_rows</td><td>Internal measure row ID — stable reference for rule engine</td></tr>
+<tr><td class="json-path">[].category</td><td><code>Hardcoded</code></td><td>—</td><td>—</td><td>—</td><td>Always 'Hedis'</td><td>Category label — differentiates HEDIS from other alert types</td></tr>
+<tr><td class="json-path">[].measureName</td><td><code>flowsheet_rows</code></td><td><code>frows_name</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Human-readable HEDIS measure name — dashboard display</td></tr>
+<tr><td class="json-path">[].screeningDate</td><td><code>flowsheet_save_data_det</code></td><td><code>d_value</code> (most recent)</td><td>varchar</td><td>—</td><td>GROUP_CONCAT DESC order; parsed as date '%m/%d/%Y'; IFNULL → 'Unknown'</td><td>Most recent screening date — care gap detection</td></tr>
+<tr><td class="json-path">[].status</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="computed">Computed</span>: Compliant/Gap based on screeningDate vs measure spec</td><td>STAR rating input — drives care gap outreach rule</td></tr>
+</table></div>
+
+<!-- ── ENCOUNTERS ── -->
+<div id="enc" class="sec-hdr">patient.encounters[] — Spine <span class="badge">Source: adt_encounter + cclf_encounter + mra1_encounter + adt_appointment</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>adt_encounter</code> / <code>cclf_encounter</code></td><td><code>encounter_nr</code></td><td>bigint unsigned</td><td><span class="pk">PK</span></td><td>Direct copy — globally unique across sources</td><td>CDC identity + cross-reference anchor for all embedded sub-records</td></tr>
+<tr><td class="json-path">[].account_id</td><td><code>adt_patient</code></td><td><code>account_id</code></td><td>varchar(60)</td><td><span class="fk">Correlation</span></td><td>Carried from patient root via origid lookup</td><td>Cross-section correlation without joins</td></tr>
+<tr><td class="json-path">[].encounter_nr</td><td><code>adt_encounter</code></td><td><code>encounter_nr</code></td><td>bigint unsigned</td><td>—</td><td>Direct copy</td><td>Join key for all encounter-linked events (transport, home program, labs)</td></tr>
+<tr><td class="json-path">[].claim_ref_num</td><td><code>adt_encounter</code></td><td><code>mra_clm_refer_num</code></td><td>varchar(20)</td><td>—</td><td>Direct copy</td><td>CMS claim reference — links to CCLF claim</td></tr>
+<tr><td class="json-path">[].source_system</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="computed">Computed</span>: 'adt'/'cclf'/'mra1'/'mra4'/'bcda' by origin table</td><td>Data lineage — claim source for audit</td></tr>
+<tr><td class="json-path">[].enc_class_nr</td><td><code>adt_encounter</code></td><td><code>encounter_class_nr</code></td><td>smallint unsigned</td><td>—</td><td>Direct copy</td><td>Encounter class — drives setting classification</td></tr>
+<tr><td class="json-path">[].encounter_type</td><td><code>adt_encounter</code></td><td><code>encounter_type</code></td><td>varchar(300)</td><td>—</td><td>Direct copy</td><td>Clinical encounter type</td></tr>
+<tr><td class="json-path">[].encounter_status</td><td><code>adt_encounter</code></td><td><code>encounter_status</code></td><td>varchar(25)</td><td>—</td><td>Direct copy</td><td>Open/closed — active inpatient detection</td></tr>
+<tr><td class="json-path">[].setting</td><td><code>adt_encounter</code> / <code>mra1_encounter</code></td><td><code>enc_proc_type</code></td><td>varchar(50)</td><td>—</td><td>Direct copy + UNION branch label per source</td><td>Setting of care — Part A/B/SNF/ER classification</td></tr>
+<tr><td class="json-path">[].pos / pos_curr</td><td><code>adt_encounter</code></td><td><code>pos</code> / <code>pos_curr</code></td><td>smallint</td><td>—</td><td>Direct copy</td><td>Place of service codes — billing and reporting</td></tr>
+<tr><td class="json-path">[].dates.admission_date</td><td><code>adt_encounter</code></td><td><code>encounter_date</code></td><td>datetime</td><td>—</td><td>ISO-8601 date</td><td>Episode start — LOS calculation, TCM window</td></tr>
+<tr><td class="json-path">[].dates.discharge_date</td><td><code>adt_encounter</code></td><td><code>discharge_date</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>Episode end — readmission window start</td></tr>
+<tr><td class="json-path">[].dates.length_of_stay_days</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="computed">Computed</span>: DATEDIFF(discharge_date, encounter_date)</td><td>LOS — cost driver, SNF placement trigger</td></tr>
+<tr><td class="json-path">[].dates.hcc_followup_date</td><td><code>adt_encounter</code></td><td><code>hcc_followup</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>HCC follow-up appointment target date</td></tr>
+<tr><td class="json-path">[].dates.cm_followup_date</td><td><code>adt_encounter</code></td><td><code>cm_followup</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>Care manager follow-up due date</td></tr>
+<tr><td class="json-path">[].facility.name</td><td><code>adt_encounter</code></td><td><code>hospital_name</code></td><td>varchar(200)</td><td>—</td><td>Direct copy</td><td>Facility attribution — network leakage analysis</td></tr>
+<tr><td class="json-path">[].facility.npi</td><td><code>adt_encounter</code></td><td><code>hospital_npi</code></td><td>varchar(20)</td><td>—</td><td>Direct copy</td><td>NPI for facility network validation</td></tr>
+<tr><td class="json-path">[].facility.taxonomy</td><td><code>adt_encounter</code></td><td><code>taxonomy</code></td><td>varchar(255)</td><td>—</td><td>Direct copy</td><td>Facility type classification</td></tr>
+<tr><td class="json-path">[].provider.attending_npi</td><td><code>adt_encounter</code></td><td><code>ATNDG_PRVDR_NPI_NUM</code></td><td>varchar(50)</td><td>—</td><td>Direct copy</td><td>Attending provider NPI — attribution validation</td></tr>
+<tr><td class="json-path">[].provider.dce_provider</td><td><code>adt_encounter</code></td><td><code>dce_provider_name</code></td><td>varchar(100)</td><td>—</td><td>Direct copy</td><td>DCE attributed provider at time of encounter</td></tr>
+<tr><td class="json-path">[].admission.point_of_origin</td><td><code>adt_appointment</code></td><td><code>point_of_origin</code></td><td>varchar</td><td>—</td><td>JOIN on encounter_nr</td><td>Admission source — ER vs elective classification</td></tr>
+<tr><td class="json-path">[].admission.admit_type_cd</td><td><code>cclf_encounter</code></td><td><code>CLM_ADMSN_TYPE_CD</code></td><td>varchar(20)</td><td>—</td><td>Direct copy</td><td>CMS admission type — inpatient coding</td></tr>
+<tr><td class="json-path">[].discharge.disposition</td><td><code>adt_procedure_discharge</code></td><td><code>discharge_loc</code></td><td>varchar</td><td>—</td><td>JOIN on encounter_nr → option_code_values label</td><td>Post-acute routing — SNF/HHA/home</td></tr>
+<tr><td class="json-path">[].discharge.readmit</td><td><code>adt_encounter</code></td><td><code>readmission_status</code></td><td>varchar(30)</td><td>—</td><td>CASE → boolean</td><td>Readmission flag — ACO REACH penalty metric</td></tr>
+<tr><td class="json-path">[].discharge.readmit_er</td><td><code>adt_encounter</code></td><td><code>readmit_er_status</code></td><td>tinyint</td><td>—</td><td>Cast to boolean</td><td>ER readmission distinction for ACSC tracking</td></tr>
+<tr><td class="json-path">[].discharge.tfu_enabled</td><td><code>adt_encounter</code></td><td><code>tfu_enabled</code></td><td>tinyint(1)</td><td>—</td><td>Cast to boolean</td><td>Transitional Follow-Up enrollment flag</td></tr>
+<tr><td class="json-path">[].discharge.followup_days</td><td><code>adt_encounter</code></td><td><code>followup_days</code></td><td>int</td><td>—</td><td>Direct copy</td><td>TCM window — 7 or 14-day follow-up compliance</td></tr>
+<tr><td class="json-path">[].discharge.acr_numerator</td><td><code>adt_encounter</code></td><td><code>acr_numerator</code></td><td>tinyint</td><td>—</td><td>Direct copy</td><td>All-Cause Readmission — HEDIS ACR measure flag</td></tr>
+<tr><td class="json-path">[].discharge.tcm_numerator</td><td><code>adt_encounter</code></td><td><code>tcm_num</code></td><td>tinyint(1)</td><td>—</td><td>Direct copy</td><td>Transitional Care Management billing flag</td></tr>
+<tr><td class="json-path">[].claim.clm_amt_paid</td><td><code>cclf_encounter</code></td><td><code>CLM_AMT_PD</code></td><td>double(20,4)</td><td>—</td><td>Direct copy</td><td>Medicare payment — cost analytics</td></tr>
+<tr><td class="json-path">[].claim.clm_uniq_id</td><td><code>cclf_encounter</code></td><td><code>CUR_CLM_UNIQ_ID</code></td><td>varchar(100)</td><td>—</td><td>Direct copy</td><td>CMS unique claim ID — deduplication</td></tr>
+<tr><td class="json-path">[].claim.rndrg_prvdr_npi</td><td><code>cclf_encounter</code></td><td><code>CLM_RNDRG_PRVDR_NPI_NUM</code></td><td>varchar(30)</td><td>—</td><td>Direct copy</td><td>Rendering provider NPI on claim</td></tr>
+<tr><td class="json-path">[].audit.audit_status</td><td><code>adt_encounter</code></td><td><code>audit_status</code></td><td>enum</td><td>—</td><td>Direct copy (not_audit/support/not_support)</td><td>Clinical audit decision record</td></tr>
+<tr><td class="json-path">[].audit.mos</td><td><code>adt_encounter</code></td><td><code>mos</code></td><td>varchar(50)</td><td>—</td><td>Direct copy</td><td>Mode of service — billing classification</td></tr>
+<tr><td class="json-path">[].audit.mif_exclusion</td><td><code>adt_encounter</code></td><td><code>mif_exclusion</code></td><td>tinyint(1)</td><td>—</td><td>Cast to boolean</td><td>Measure Integrity Framework exclusion flag</td></tr>
+<tr><td class="json-path">[].audit.census_status</td><td><code>adt_encounter</code></td><td><code>census_status</code></td><td>varchar(75)</td><td>—</td><td>Direct copy</td><td>Census management for inpatient rounding</td></tr>
+</table></div>
+
+<!-- ── HIE FEED ── -->
+<div id="hie_feed" class="sec-hdr">encounters[].hie_feed[] — ADT Encounter Feed <span class="badge">Source: adt_encounter + adt_appointment + adt_procedure_discharge + patient → sp_load_hie_feed_json_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>adt_encounter</code></td><td><code>encounter_nr</code></td><td>bigint unsigned</td><td><span class="pk">PK</span></td><td>Direct copy — globally unique encounter identity</td><td>CDC identity — update/delete individual HIE feed event by encounter</td></tr>
+<tr><td class="json-path">[].encounterNr</td><td><code>adt_encounter</code></td><td><code>encounter_nr</code></td><td>bigint unsigned</td><td>—</td><td>Direct copy</td><td>Links to encounter spine — ADT real-time feed identity</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>patient</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].memberName</td><td><code>patient</code></td><td><code>CONCAT(firstname,' ',lastname,',',middlename)</code></td><td>varchar</td><td>—</td><td>CONCAT with formatting</td><td>Display name — care team notification</td></tr>
+<tr><td class="json-path">[].dos</td><td><code>adt_encounter</code></td><td><code>encounter_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Date of service — episode start for ADT alert</td></tr>
+<tr><td class="json-path">[].dod</td><td><code>adt_encounter</code></td><td><code>discharge_date</code></td><td>date</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Discharge date — episode end</td></tr>
+<tr><td class="json-path">[].dceProvider</td><td><code>patient</code></td><td><code>sp_dr_1</code></td><td>varchar(120)</td><td>—</td><td>Direct copy</td><td>DCE attributed provider — care manager routing</td></tr>
+<tr><td class="json-path">[].dceGroup</td><td><code>patient</code></td><td><code>facility_name</code></td><td>varchar(250)</td><td>—</td><td>Direct copy</td><td>DCE group — attribution for ACO reporting</td></tr>
+<tr><td class="json-path">[].facilityName</td><td><code>adt_encounter</code></td><td><code>hospital_name</code></td><td>varchar(200)</td><td>—</td><td>Direct copy</td><td>Receiving facility — network leakage detection</td></tr>
+<tr><td class="json-path">[].toPersonnelName</td><td><code>adt_appointment</code></td><td><code>to_personell_name</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Assigned care personnel — care coordination handoff</td></tr>
+<tr><td class="json-path">[].dischargeDisposition</td><td><code>adt_procedure_discharge</code></td><td><code>discharge_loc</code></td><td>varchar</td><td>—</td><td>JOIN on encounter_nr → option_code_values label</td><td>Post-acute routing — SNF/HHA/home</td></tr>
+<tr><td class="json-path">[].dischargeTo</td><td><code>adt_procedure_discharge</code></td><td><code>discharge_to</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Discharge destination code — post-acute referral</td></tr>
+<tr><td class="json-path">[].purpose</td><td><code>adt_appointment</code></td><td><code>purpose</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Admission purpose — ER vs elective vs transfer</td></tr>
+<tr><td class="json-path">[].sex</td><td><code>patient</code></td><td><code>sex</code></td><td>varchar(16)</td><td>—</td><td>CASE M→'Male' F→'Female'</td><td>Clinical stratification field on ADT feed</td></tr>
+<tr><td class="json-path">[].contactHome</td><td><code>patient</code></td><td><code>CONCAT(phone_1_nr,' ',phone_1_code)</code></td><td>varchar</td><td>—</td><td>CONCAT</td><td>Phone for immediate family outreach on admission</td></tr>
+<tr><td class="json-path">[].cellphone</td><td><code>patient</code></td><td><code>cellphone_2_nr</code></td><td>varchar(35)</td><td>—</td><td>Direct copy</td><td>Mobile contact — SMS outreach on discharge</td></tr>
+<tr><td class="json-path">[].encounterClassNr</td><td><code>adt_appointment</code></td><td><code>encounter_class_nr</code></td><td>smallint</td><td>—</td><td>Direct copy</td><td>Encounter class — drives setting classification</td></tr>
+<tr><td class="json-path">[].pointOfOrigin</td><td><code>adt_appointment</code></td><td><code>point_of_origin</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Admission source — ER vs elective classification</td></tr>
+<tr><td class="json-path">[].appointmentDate</td><td><code>adt_appointment</code></td><td><code>date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Scheduled appointment date — scheduling gap detection</td></tr>
+<tr><td class="json-path">[].encounterType</td><td><code>adt_encounter</code></td><td><code>encounter_type</code></td><td>varchar(300)</td><td>—</td><td>Direct copy</td><td>Clinical encounter type label</td></tr>
+<tr><td class="json-path">[].encounterStatus</td><td><code>adt_encounter</code></td><td><code>encounter_status</code></td><td>varchar(25)</td><td>—</td><td>Direct copy</td><td>Open/closed — active inpatient census detection</td></tr>
+<tr><td class="json-path">[].pos</td><td><code>adt_encounter</code></td><td><code>pos</code></td><td>smallint</td><td>—</td><td>Direct copy</td><td>Place of service code — billing classification</td></tr>
+<tr><td class="json-path">[].posCurr</td><td><code>adt_encounter</code></td><td><code>pos_curr</code></td><td>smallint</td><td>—</td><td>Direct copy</td><td>Current place of service — real-time location</td></tr>
+<tr><td class="json-path">[].extraService</td><td><code>adt_encounter</code></td><td><code>extra_service</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Additional service flags on the ADT event</td></tr>
+<tr><td class="json-path">[].careStatus</td><td><code>adt_encounter</code></td><td><code>care_status</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Care management status — workflow routing</td></tr>
+<tr><td class="json-path">[].careStatusPersonnel</td><td><code>adt_encounter</code></td><td><code>care_status_personnel</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Care manager assigned to this status — workload tracking</td></tr>
+<tr><td class="json-path">[].taxonomy</td><td><code>adt_encounter</code></td><td><code>taxonomy</code></td><td>varchar(255)</td><td>—</td><td>Direct copy</td><td>Facility taxonomy code — facility type classification</td></tr>
+<tr><td class="json-path">[].apptConfirmedMra</td><td><code>adt_encounter</code></td><td><code>appt_confirmed_mra</code></td><td>tinyint</td><td>—</td><td>Direct copy</td><td>MRA appointment confirmation flag — scheduling compliance</td></tr>
+<tr><td class="json-path">[].readmissionStatus</td><td><code>adt_encounter</code></td><td><code>readmission_status</code> / <code>readmit_er_status</code></td><td>varchar / tinyint</td><td>—</td><td>CASE → 'Yes'/'No' for both fields</td><td>Readmission flag — ACO REACH penalty metric</td></tr>
+<tr><td class="json-path">[].los</td><td><code>Computed</code></td><td><code>DATEDIFF(discharge_date, appt.date)</code></td><td>—</td><td>—</td><td><span class="computed">Computed</span></td><td>Length of stay — cost driver, SNF placement trigger</td></tr>
+<tr><td class="json-path">[].internalData</td><td><code>UDF</code></td><td><code>get_hei_notes(encounter_nr)</code></td><td>—</td><td>—</td><td>User-defined function call</td><td>HEI clinical notes — care manager context enrichment</td></tr>
+</table></div>
+
+<!-- ── CCLF PATIENT VISITS ── -->
+<div id="cclf_visits" class="sec-hdr">encounters[].cclf_patient_visits[] — mra1_encounter by enc_proc_type <span class="badge">Source: mra1_encounter</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>enc_proc_type Values</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>mra1_encounter</code></td><td><code>encounter_nr</code></td><td>bigint unsigned</td><td><span class="pk">PK</span></td><td>Direct copy — source table PK; immutable; enc_proc_type is a classification field, not part of identity</td><td>CDC identity per CCLF visit row — stable internal key; one encounter_nr maps to one mra1_encounter row</td></tr>
+<tr><td class="json-path">[].encounterNr</td><td><code>mra1_encounter</code></td><td><code>encounter_nr</code></td><td>bigint unsigned</td><td>—</td><td>All types</td><td>Claim encounter ID — links to encounter spine</td></tr>
+<tr><td class="json-path">[].admitDate</td><td><code>mra1_encounter</code></td><td><code>enc_admit_date</code></td><td>date</td><td>—</td><td>All types</td><td>Episode admission date — LOS and TCM window start</td></tr>
+<tr><td class="json-path">[].admitTime</td><td><code>mra1_encounter</code></td><td><code>enc_admit_time</code></td><td>time</td><td>—</td><td>All types</td><td>Admit time — ER throughput analytics</td></tr>
+<tr><td class="json-path">[].dischargeDate</td><td><code>mra1_encounter</code></td><td><code>enc_disch_date</code></td><td>date</td><td>—</td><td>All types</td><td>Episode end — readmission window, post-acute routing</td></tr>
+<tr><td class="json-path">[].dischargeTime</td><td><code>mra1_encounter</code></td><td><code>enc_disch_time</code></td><td>time</td><td>—</td><td>All types</td><td>Discharge time — LOS calculation precision</td></tr>
+<tr><td class="json-path">[].groupType</td><td><code>mra1_encounter</code></td><td><code>dce_group_type</code></td><td>varchar</td><td>—</td><td>All types</td><td>DCE group classification — ACO attribution grouping</td></tr>
+<tr><td class="json-path">[].subGroupType</td><td><code>mra1_encounter</code></td><td><code>dce_sub_group_type</code></td><td>varchar</td><td>—</td><td>All types</td><td>DCE sub-group — granular attribution reporting</td></tr>
+<tr><td class="json-path">[].marketId</td><td><code>mra1_encounter</code></td><td><code>market_nr</code></td><td>int</td><td>—</td><td>All types</td><td>Market segment ID — regional cost analytics</td></tr>
+<tr><td class="json-path">[].marketName</td><td><code>mra1_encounter</code></td><td><code>market_name</code></td><td>varchar</td><td>—</td><td>All types</td><td>Market name — reporting label</td></tr>
+<tr><td class="json-path">[].facilityId</td><td><code>mra1_encounter</code></td><td><code>pt_facility_nr</code></td><td>int</td><td>—</td><td>All types</td><td>Primary facility ID — network leakage detection</td></tr>
+<tr><td class="json-path">[].facilitySubId</td><td><code>mra1_encounter</code></td><td><code>pt_facility_sub_nr</code></td><td>int</td><td>—</td><td>All types</td><td>Sub-facility ID — department-level analytics</td></tr>
+<tr><td class="json-path">[].providerId</td><td><code>mra1_encounter</code></td><td><code>pt_provider_num</code></td><td>varchar</td><td>—</td><td>All types</td><td>Rendering provider number — attribution</td></tr>
+<tr><td class="json-path">[].facilityName</td><td><code>mra1_encounter</code></td><td><code>pt_facility_name</code></td><td>varchar</td><td>—</td><td>All types</td><td>Facility name — human-readable attribution label</td></tr>
+<tr><td class="json-path">[].facilitySubName</td><td><code>mra1_encounter</code></td><td><code>pt_facility_sub_name</code></td><td>varchar</td><td>—</td><td>All types</td><td>Sub-facility name — department label</td></tr>
+<tr><td class="json-path">[].primaryPhysician</td><td><code>mra1_encounter</code></td><td><code>pt_sp_dr_1</code></td><td>varchar</td><td>—</td><td>All types</td><td>Primary physician on encounter — DCE attribution</td></tr>
+<tr><td class="json-path">[].providerNpi</td><td><code>mra1_encounter</code></td><td><code>m_provider_npi</code></td><td>varchar(25)</td><td>—</td><td>All types</td><td>Provider NPI — network validation, CMS reporting</td></tr>
+<tr><td class="json-path">[].alignedStatus</td><td><code>mra1_encounter</code></td><td><code>pt_aligned_status</code></td><td>varchar</td><td>—</td><td>All types</td><td>Primary CMS alignment status at time of visit</td></tr>
+<tr><td class="json-path">[].secondaryAlignedStatus</td><td><code>mra1_encounter</code></td><td><code>pt_aligned2status</code></td><td>varchar</td><td>—</td><td>All types</td><td>Secondary alignment status — dual eligibility tracking</td></tr>
+<tr><td class="json-path">[].mh1CalculatedAmount</td><td><code>mra1_encounter</code></td><td><code>mh1_cal_amount</code></td><td>double(20,4)</td><td>—</td><td>All types</td><td>MH1 benchmark calculated amount — cost benchmarking</td></tr>
+<tr><td class="json-path">[].mc1CalculatedAmount</td><td><code>mra1_encounter</code></td><td><code>mc1_cal_amount</code></td><td>double(20,4)</td><td>—</td><td>All types</td><td>MC1 benchmark calculated amount — cost benchmarking</td></tr>
+<tr><td class="json-path">[].isReferenceAdmitDate</td><td><code>mra1_encounter</code></td><td><code>is_enc_ref_admitdate</code></td><td>tinyint(1)</td><td>—</td><td>All types</td><td>Reference admission date flag — episode grouper anchor</td></tr>
+<tr><td class="json-path">[].isReadmission</td><td><code>mra1_encounter</code></td><td><code>is_readmit</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, SNF, Psychiatric, Rehabilitation, LTCH</td><td>Readmission flag — ACO REACH penalty metric</td></tr>
+<tr><td class="json-path">[].isC2Readmission</td><td><code>mra1_encounter</code></td><td><code>is_c2_readmit</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, SNF, Psychiatric, Rehabilitation, LTCH</td><td>Companion 2 readmission — extended readmit window flag</td></tr>
+<tr><td class="json-path">[].isTransferredEncounter</td><td><code>mra1_encounter</code></td><td><code>is_enc_transfer</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, SNF, LTCH</td><td>Transfer flag — excludes from readmit denominator</td></tr>
+<tr><td class="json-path">[].isSnfRecord</td><td><code>mra1_encounter</code></td><td><code>is_snf_rec</code></td><td>tinyint(1)</td><td>—</td><td>SNF</td><td>SNF encounter flag — post-acute cost driver</td></tr>
+<tr><td class="json-path">[].isSnfAdmitDateReference</td><td><code>mra1_encounter</code></td><td><code>is_snf_admitdate_ref</code></td><td>tinyint(1)</td><td>—</td><td>SNF</td><td>SNF reference admit date — episode grouper for SNF spend</td></tr>
+<tr><td class="json-path">[].isEmergencyRoomVisit</td><td><code>mra1_encounter</code></td><td><code>is_er_visit</code></td><td>tinyint(1)</td><td>—</td><td>Emergency</td><td>ER visit flag — UAMCC / ACR measure denominator</td></tr>
+<tr><td class="json-path">[].isPrimaryCareVisit</td><td><code>mra1_encounter</code></td><td><code>is_visit_pcp</code></td><td>tinyint(1)</td><td>—</td><td>Part B, Part C</td><td>PCP visit flag — HEDIS access measure compliance</td></tr>
+<tr><td class="json-path">[].isOfficeVisitRecord</td><td><code>mra1_encounter</code></td><td><code>is_offvisit_rec</code></td><td>tinyint(1)</td><td>—</td><td>Part B, Part C, Part D</td><td>Office visit flag — AWV and specialist visit detection</td></tr>
+<tr><td class="json-path">[].isOfficeVisitSecondaryRecord</td><td><code>mra1_encounter</code></td><td><code>is_offvisit2rec</code></td><td>tinyint(1)</td><td>—</td><td>Part B, Part C</td><td>Secondary office visit flag — dual-claim dedup</td></tr>
+<tr><td class="json-path">[].followUpFlag</td><td><code>mra1_encounter</code></td><td><code>m_flwup_flag</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, Emergency, SNF</td><td>Follow-up required flag — TFU program enrollment trigger</td></tr>
+<tr><td class="json-path">[].is72HourFollowUp</td><td><code>mra1_encounter</code></td><td><code>is_72_hr_flwup</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, Emergency</td><td>72-hour follow-up compliance flag — TCM billing gate</td></tr>
+<tr><td class="json-path">[].is7DayFollowUp</td><td><code>mra1_encounter</code></td><td><code>is_flwup_7_days</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, Emergency</td><td>7-day TFU numerator — ACO REACH transitional care KPI</td></tr>
+<tr><td class="json-path">[].is14DayFollowUp</td><td><code>mra1_encounter</code></td><td><code>is_flwup_14_days</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, Emergency, SNF</td><td>14-day TFU numerator — HEDIS follow-after-hospitalization</td></tr>
+<tr><td class="json-path">[].isGlobal14DayFollowUp</td><td><code>mra1_encounter</code></td><td><code>is_gflwup_14_days</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, Emergency, SNF</td><td>Global 14-day follow-up — cross-ACO TFU compliance</td></tr>
+<tr><td class="json-path">[].followUp72HourDate</td><td><code>mra1_encounter</code></td><td><code>m72hr_flwup_date</code></td><td>date</td><td>—</td><td>Acute Hospital, Emergency</td><td>72-hour follow-up target date — scheduling queue date</td></tr>
+<tr><td class="json-path">[].emergencyRoomFollowUp</td><td><code>mra1_encounter</code></td><td><code>tfu_pb_er</code></td><td>tinyint(1)</td><td>—</td><td>Emergency</td><td>ER TFU flag — transitional follow-up post-ER discharge</td></tr>
+<tr><td class="json-path">[].observationFollowUp</td><td><code>mra1_encounter</code></td><td><code>tfu_pb_obs</code></td><td>tinyint(1)</td><td>—</td><td>Observation</td><td>Observation TFU flag — post-observation follow-up compliance</td></tr>
+<tr><td class="json-path">[].hospitalId</td><td><code>mra1_encounter</code></td><td><code>hospital_nr</code></td><td>int</td><td>—</td><td>Acute Hospital, Emergency, Observation, LTCH, Psychiatric, Rehabilitation</td><td>Hospital ID — facility network analysis</td></tr>
+<tr><td class="json-path">[].hospitalName</td><td><code>mra1_encounter</code></td><td><code>hospital_name</code></td><td>varchar</td><td>—</td><td>Acute Hospital, Emergency, Observation, LTCH, Psychiatric, Rehabilitation</td><td>Hospital name — network leakage reporting</td></tr>
+<tr><td class="json-path">[].hospitalTaxonomy</td><td><code>mra1_encounter</code></td><td><code>hos_taxonomy01</code></td><td>varchar</td><td>—</td><td>Acute Hospital, Emergency, Observation, LTCH, Psychiatric, Rehabilitation</td><td>Hospital taxonomy code — facility type classification</td></tr>
+<tr><td class="json-path">[].isBcdaMatch</td><td><code>mra1_encounter</code></td><td><code>is_bcda_match</code></td><td>tinyint(1)</td><td>—</td><td>All types</td><td>BCDA claims match flag — CMS data reconciliation</td></tr>
+<tr><td class="json-path">[].calculatedBedDays</td><td><code>mra1_encounter</code></td><td><code>m_cal_bed_days</code></td><td>int</td><td>—</td><td>Acute Hospital, SNF, LTCH, Psychiatric, Rehabilitation</td><td>Calculated bed days — LOS cost driver, SNF benefit day tracking</td></tr>
+<tr><td class="json-path">[].dischargeType</td><td><code>mra1_encounter</code></td><td><code>e_discharge_type</code></td><td>varchar</td><td>—</td><td>All types</td><td>CMS discharge type code — post-acute routing logic</td></tr>
+<tr><td class="json-path">[].dischargeText</td><td><code>mra1_encounter</code></td><td><code>e_discharge_text</code></td><td>varchar</td><td>—</td><td>All types</td><td>Human-readable discharge disposition — care transition label</td></tr>
+<tr><td class="json-path">[].providerName</td><td><code>mra1_encounter</code></td><td><code>m_provider_name</code></td><td>varchar</td><td>—</td><td>All types</td><td>Rendering provider name — attribution display</td></tr>
+<tr><td class="json-path">[].placeOfService</td><td><code>mra1_encounter</code></td><td><code>m_pos_txt</code></td><td>varchar</td><td>—</td><td>Part B, Part C, Part D, Part DME</td><td>Place of service text — billing site classification</td></tr>
+<tr><td class="json-path">[].providerSpecialty</td><td><code>mra1_encounter</code></td><td><code>m_prov_spclty_txt</code></td><td>varchar</td><td>—</td><td>All types</td><td>Provider specialty — specialist vs PCP visit classification</td></tr>
+<tr><td class="json-path">[].followUpDate</td><td><code>mra1_encounter</code></td><td><code>tfu_followup_date</code></td><td>date</td><td>—</td><td>Acute Hospital, Emergency, SNF</td><td>TFU scheduled follow-up date — care manager scheduling queue</td></tr>
+<tr><td class="json-path">[].tfuDenominator</td><td><code>mra1_encounter</code></td><td><code>tfu_denom</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, Emergency, SNF</td><td>TFU denominator flag — eligible discharges for follow-up measure</td></tr>
+<tr><td class="json-path">[].tfuNumerator</td><td><code>mra1_encounter</code></td><td><code>tfu_numer</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, Emergency, SNF</td><td>TFU numerator flag — completed follow-up visits</td></tr>
+<tr><td class="json-path">[].acrNumerator</td><td><code>mra1_encounter</code></td><td><code>acr_numer</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, Emergency, SNF</td><td>ACR numerator — All-Cause Readmission HEDIS measure flag</td></tr>
+<tr><td class="json-path">[].acrDenominator</td><td><code>mra1_encounter</code></td><td><code>acr_denom</code></td><td>tinyint(1)</td><td>—</td><td>Acute Hospital, Emergency, SNF</td><td>ACR denominator — index admission eligible for readmit measure</td></tr>
+<tr><td class="json-path">[].uamccNumerator</td><td><code>mra1_encounter</code></td><td><code>uamcc_numerator</code></td><td>tinyint(1)</td><td>—</td><td>Emergency, Acute Hospital</td><td>UAMCC numerator — Unnecessary Admissions for Ambulatory Care-Sensitive Conditions</td></tr>
+<tr class="grp"><td colspan="7">enc_proc_type filter values → JSON setting field: encounters[].setting</td></tr>
+<tr><td class="json-path">[].setting = "Acute Hospital"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Acute Hospital'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for inpatient admits</td><td>Part A inpatient — highest cost setting, readmit/LOS KPIs</td></tr>
+<tr><td class="json-path">[].setting = "Emergency"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Emergency'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for ER visits</td><td>ER utilization — UAMCC, ACR, TFU measures</td></tr>
+<tr><td class="json-path">[].setting = "HHA"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'HHA'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for home health episodes</td><td>Home Health Agency — post-acute spend and episode continuity</td></tr>
+<tr><td class="json-path">[].setting = "Hospice"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Hospice'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for hospice claims</td><td>Hospice enrollment — cost, quality exclusion rules</td></tr>
+<tr><td class="json-path">[].setting = "Long Term Care Hospital"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Long Term Care Hospital'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for LTCH</td><td>LTCH — high-acuity post-acute, bed-day and cost tracking</td></tr>
+<tr><td class="json-path">[].setting = "Observation"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Observation'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for obs stays</td><td>Observation — not inpatient, affects SNF eligibility and beneficiary cost</td></tr>
+<tr><td class="json-path">[].setting = "Part B"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Part B'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for Part B outpatient</td><td>Part B outpatient — physician, specialist, preventive services</td></tr>
+<tr><td class="json-path">[].setting = "Part C"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Part C'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for Part C MA claims</td><td>Medicare Advantage encounter — supplemental data submission</td></tr>
+<tr><td class="json-path">[].setting = "Part D"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Part D'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for Part D pharmacy</td><td>Part D pharmacy — adherence (PDC) and polypharmacy analysis</td></tr>
+<tr><td class="json-path">[].setting = "Part DME"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Part DME'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for DME claims</td><td>Durable Medical Equipment — SDOH/home safety assessment trigger</td></tr>
+<tr><td class="json-path">[].setting = "Psychiatric"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Psychiatric'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for psychiatric inpatient</td><td>Behavioral health inpatient — follow-after-hospitalization measure</td></tr>
+<tr><td class="json-path">[].setting = "Rehabilitation"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'Rehabilitation'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for inpatient rehab</td><td>Inpatient Rehab Facility — post-acute episode grouping</td></tr>
+<tr><td class="json-path">[].setting = "SNF"</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type = 'SNF'</code></td><td>varchar(50)</td><td>—</td><td>WHERE filter for skilled nursing</td><td>Skilled Nursing Facility — highest post-acute cost, TFU/ACR measures</td></tr>
+</table></div>
+
+<!-- ── VISITS (6-BRANCH UNION) ── -->
+<div id="visits" class="sec-hdr">encounters[].visits[] — 6-Branch UNION <span class="badge">Source: mra1_encounter + mra4_encounter + adt_encounter → sp_load_patients_visits_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Branch / Filter</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>All branches</code></td><td><code>encounter_nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy — encounter_nr is the immutable source PK across all 6 branches; source type tag is carried in the separate `type` field, not baked into identity</td><td>CDC identity per visit row — stable internal key; never changes even if type classification is corrected</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>All branches</code></td><td><code>origid / patient_id</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>All 6 branches; CONVERT to utf8mb4</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].encounterNr</td><td><code>All branches</code></td><td><code>encounter_nr</code></td><td>bigint</td><td>—</td><td>All 6 branches; IFNULL → 'Unknown'</td><td>Encounter identity — cross-reference to spine</td></tr>
+<tr><td class="json-path">[].dos</td><td><code>All branches</code></td><td><code>encounter_date / enc_admit_date</code></td><td>datetime / date</td><td>—</td><td>All 6 branches; DATE_FORMAT '%m/%d/%Y'</td><td>Date of service — episode start for analytics</td></tr>
+<tr><td class="json-path">[].dischargeDate</td><td><code>All branches</code></td><td><code>discharge_date / enc_disch_date</code></td><td>date</td><td>—</td><td>All 6 branches; DATE_FORMAT '%m/%d/%Y'</td><td>Episode end — readmission window, post-acute routing</td></tr>
+<tr><td class="json-path">[].facility</td><td><code>hospital_centers [B1-B4] / mra4_encounter [B5] / adt_encounter [B6]</code></td><td><code>NAME / hospital_name</code></td><td>varchar</td><td>—</td><td>B1-B4: hospital_centers; B5: mra4; B6: adt; IFNULL → 'Unknown'</td><td>Facility name — network leakage detection</td></tr>
+<tr><td class="json-path">[].setting</td><td><code>Computed per branch</code></td><td><code>encounter_type [B1] / hardcoded label [B2-B5] / CONCAT [B6]</code></td><td>varchar</td><td>—</td><td>B1: encounter_type; B2: 'Inpatient/Part A'; B3: 'SNF'; B4: 'Part B'; B5: 'BCDA Inpatient/Part A'; B6: CONCAT('ADT ',enc_proc_type)</td><td>Care setting label — drives utilization category reporting</td></tr>
+<tr><td class="json-path">[].type</td><td><code>Hardcoded per branch</code></td><td>—</td><td>varchar</td><td>—</td><td>B1: 'cclf'; B2: 'cclf'; B3: 'cclf'; B4: 'cclf'; B5: 'bcda'; B6: 'adt'</td><td>Source type tag — data lineage for rule engine</td></tr>
+<tr><td class="json-path">[].diagnosis</td><td><code>cclf_encounter_icd_codes [B1-B4]</code></td><td><code>diagnosis_desc (GROUP_CONCAT)</code></td><td>varchar</td><td>—</td><td>B1-B4: GROUP_CONCAT per visit; B5/B6: empty/null; IFNULL → 'Unknown'</td><td>Primary diagnoses on visit — clinical context for rules</td></tr>
+<tr><td class="json-path">[].onsetDate</td><td><code>cclf_encounter_icd_codes [B1-B4]</code></td><td><code>onset_date</code></td><td>datetime</td><td>—</td><td>B1-B4: DATE_FORMAT '%m/%d/%Y'; B5: ''; B6: NULL</td><td>Condition onset on visit — chronicity indicator</td></tr>
+<tr><td class="json-path">[].dischargeDisposition</td><td><code>option_code_values [B1-B5] / adt_encounter [B6]</code></td><td><code>Option_Label / encounter_type</code></td><td>varchar</td><td>—</td><td>B1-B5: option_code_values label; B6: encounter_type; IFNULL → 'Unknown'</td><td>Post-acute routing — SNF/HHA/home/rehab</td></tr>
+<tr><td class="json-path">[].readmit</td><td><code>mra1_encounter [B1-B4] / mra4_encounter [B5] / adt_encounter [B6]</code></td><td><code>is_c2_readmit / readmission_status</code></td><td>tinyint / varchar</td><td>—</td><td>B1-B5: IF is_c2_readmit=1 → 'Yes'; B6: readmission_status CASE → 'Yes'/'No'</td><td>Readmission flag — ACO REACH penalty metric</td></tr>
+<tr><td class="json-path">[].taxonomy</td><td><code>hospital_centers [B1-B4] / mra4_encounter [B5] / adt_encounter [B6]</code></td><td><code>taxonomy_1 / hos_taxonomy01 / taxonomy</code></td><td>varchar</td><td>—</td><td>Per-branch taxonomy field; IFNULL → 'Unknown'</td><td>Facility taxonomy — facility type classification</td></tr>
+<tr><td class="json-path">[].posText</td><td><code>mra1_encounter [B1-B4] / mra4_encounter [B5] / adt_encounter [B6]</code></td><td><code>m_pos_txt / enc_proc_type</code></td><td>varchar</td><td>—</td><td>B1-B5: m_pos_txt; B6: enc_proc_type; IFNULL → 'Unknown'</td><td>Place of service text — billing site classification</td></tr>
+</table></div>
+
+<!-- ── OUTPATIENT ── -->
+<div id="outpatient" class="sec-hdr">encounters[].outpatient[] — mra1 Outpatient Visits <span class="badge">Source: mra1_encounter + mra1_encounter_bill_cpts + cpt_codes + mra1_encounter_icd_codes → sp_load_outpatients_json_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>mra1_encounter</code></td><td><code>encounter_nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy (CAST as CHAR for JSON)</td><td>CDC identity — update/delete individual outpatient visit record</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>mra1_encounter</code></td><td><code>patient_id</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].encounterNr</td><td><code>mra1_encounter</code></td><td><code>encounter_nr</code></td><td>bigint</td><td>—</td><td>CAST as CHAR</td><td>Links to encounter spine</td></tr>
+<tr><td class="json-path">[].dos</td><td><code>mra1_encounter</code></td><td><code>enc_admit_date</code></td><td>date</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Date of service — outpatient visit date</td></tr>
+<tr><td class="json-path">[].setting</td><td><code>mra1_encounter</code></td><td><code>enc_proc_type</code></td><td>varchar(50)</td><td>—</td><td>Direct copy</td><td>Care setting — Part B/C/D/DME/ER/Obs classification</td></tr>
+<tr><td class="json-path">[].providerType</td><td><code>mra1_encounter</code></td><td><code>m_prov_spclty_txt</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Provider specialty — specialist vs PCP visit classification</td></tr>
+<tr><td class="json-path">[].interventionalist</td><td><code>mra1_encounter</code></td><td><code>m_provider_name</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Rendering provider name — attribution for outpatient visit</td></tr>
+<tr><td class="json-path">[].internalData.encounterNr</td><td><code>mra1_encounter</code></td><td><code>encounter_nr</code></td><td>bigint</td><td>—</td><td><span class="multi">Nested JSON</span></td><td>Encounter reference inside nested payload</td></tr>
+<tr><td class="json-path">[].internalData.procedures[]</td><td><code>mra1_encounter_bill_cpts + cpt_codes</code></td><td><code>bb_Code, cpt_name</code></td><td>varchar</td><td>—</td><td><span class="multi">Nested JSON_ARRAY</span> — DISTINCT CPTs per encounter, LEFT JOIN cpt_codes</td><td>Billed procedures — CPT codes for outpatient analytics</td></tr>
+<tr><td class="json-path">[].internalData.diagnosis</td><td><code>mra1_encounter_icd_codes</code></td><td><code>diagnosis_code (HTML-separated list)</code></td><td>varchar</td><td>—</td><td><span class="multi">Nested string</span> — GROUP_CONCAT per encounter_nr</td><td>Diagnoses on outpatient claim — HCC capture evidence</td></tr>
+</table></div>
+
+<!-- ── DIAGNOSES ── -->
+<div id="diagnoses" class="sec-hdr">encounters[].diagnoses[] <span class="badge">Source: cclf_encounter_icd_codes + mra_hcc_coefficients + mra_raf_version_details</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>cclf_encounter_icd_codes</code></td><td><code>id</code></td><td>bigint unsigned</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>Row-level CDC for individual diagnosis line</td></tr>
+<tr><td class="json-path">[].icd_code</td><td><code>cclf_encounter_icd_codes</code></td><td><code>diagnosis_code</code></td><td>varchar(50)</td><td>—</td><td>Direct copy</td><td>Encounter-level ICD — HCC capture evidence</td></tr>
+<tr><td class="json-path">[].icd_desc</td><td><code>cclf_encounter_icd_codes</code></td><td><code>diagnosis_desc</code></td><td>varchar(255)</td><td>—</td><td>IFNULL→'No Description Found'</td><td>Human-readable label</td></tr>
+<tr><td class="json-path">[].onset_date</td><td><code>cclf_encounter_icd_codes</code></td><td><code>onset_date</code></td><td>datetime</td><td>—</td><td>ISO-8601</td><td>Condition onset tracking — chronicity</td></tr>
+<tr><td class="json-path">[].discharge_date</td><td><code>cclf_encounter_icd_codes</code></td><td><code>discharge_date</code></td><td>datetime</td><td>—</td><td>ISO-8601</td><td>Condition end per encounter</td></tr>
+<tr><td class="json-path">[].problem_type</td><td><code>cclf_encounter_icd_codes</code></td><td><code>problem_type</code></td><td>varchar(20)</td><td>—</td><td>Direct copy (Principal/Secondary)</td><td>Principal vs secondary — HCC validity rule</td></tr>
+<tr><td class="json-path">[].icd_order</td><td><code>cclf_encounter_icd_codes</code></td><td><code>icd_order</code></td><td>tinyint</td><td>—</td><td>Direct copy</td><td>Coding sequence — principal diagnosis rule</td></tr>
+<tr><td class="json-path">[].hcc_number</td><td><code>mra_hcc_coefficients</code></td><td><code>hcc</code></td><td>varchar</td><td>—</td><td>LEFT JOIN on diagnosis_code</td><td>HCC mapping at encounter level</td></tr>
+<tr><td class="json-path">[].hcc_score</td><td><code>cclf_encounter_icd_codes</code></td><td><code>hcc_score</code></td><td>double(20,4)</td><td>—</td><td>Direct copy</td><td>RAF weight at diagnosis level</td></tr>
+<tr><td class="json-path">[].hcc_included</td><td><code>cclf_encounter_icd_codes</code></td><td><code>hcc_inc</code></td><td>tinyint</td><td>—</td><td>Cast to boolean</td><td>Whether this diagnosis is included in RAF calculation</td></tr>
+<tr><td class="json-path">[].is_comorbid</td><td><code>cclf_encounter_icd_codes</code></td><td><code>is_comorbid</code></td><td>tinyint(1)</td><td>—</td><td>Cast to boolean</td><td>Comorbidity flag — risk stratification</td></tr>
+<tr><td class="json-path">[].agreement_status</td><td><code>cclf_encounter_icd_codes</code></td><td><code>agreement_status</code></td><td>varchar(20)</td><td>—</td><td>Direct copy</td><td>Physician agreement — HCC audit evidence</td></tr>
+<tr><td class="json-path">[].source</td><td><code>cclf_encounter_icd_codes</code></td><td><code>source</code></td><td>varchar(20)</td><td>—</td><td>Direct copy</td><td>Data lineage (cclf/adt/mra1)</td></tr>
+</table></div>
+
+<!-- ── PROCEDURES ── -->
+<div id="procedures" class="sec-hdr">encounters[].procedures[] <span class="badge">Source: mra1_encounter_bill_cpts + cpt_codes + cclf_encounter_procedure</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>mra1_encounter_bill_cpts</code></td><td><code>nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy — source table auto-increment PK; immutable; bb_Code is a billing field, not part of identity</td><td>CDC identity per procedure billing line — stable internal key; never changes even if CPT code is corrected</td></tr>
+<tr><td class="json-path">[].billing_code</td><td><code>mra1_encounter_bill_cpts</code></td><td><code>bb_Code</code></td><td>varchar</td><td>—</td><td>DISTINCT per encounter_nr</td><td>CPT billing code — cost and utilization analytics</td></tr>
+<tr><td class="json-path">[].cpt_name</td><td><code>cpt_codes</code></td><td><code>cpt_name</code></td><td>varchar</td><td>—</td><td>LEFT JOIN cpt_codes on bb_Code, MAX(nr) per code</td><td>Human-readable procedure description</td></tr>
+<tr><td class="json-path">[].procedure_date</td><td><code>cclf_encounter_procedure</code></td><td><code>procedure_date</code></td><td>datetime</td><td>—</td><td>ISO-8601</td><td>Service date for procedure-level analytics</td></tr>
+<tr><td class="json-path">[].revenue_code</td><td><code>mra1_encounter_bill_cpts</code></td><td><code>CLM_LINE_PROD_REV_CTR_CD</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Revenue center code — ER vs inpatient filter</td></tr>
+</table></div>
+
+<!-- ── RISK SCREENINGS ── -->
+<div id="screenings" class="sec-hdr">encounters[].risk_screenings[] <span class="badge">Source: encounter_risk_assesments</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>encounter_risk_assesments</code></td><td><code>nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per screening record</td></tr>
+<tr><td class="json-path">[].sub_type</td><td><code>encounter_risk_assesments</code></td><td><code>sub_type</code></td><td>varchar(30)</td><td>—</td><td>Direct copy (SDOH/PHQ/GAD…)</td><td>Screening category — SDOH, behavioral health</td></tr>
+<tr><td class="json-path">[].code_desc</td><td><code>encounter_risk_assesments</code></td><td><code>code_desc</code></td><td>text</td><td>—</td><td>Direct copy</td><td>Screening tool description</td></tr>
+<tr><td class="json-path">[].result_value_desc</td><td><code>encounter_risk_assesments</code></td><td><code>result_value_desc</code></td><td>varchar(500)</td><td>—</td><td>Direct copy</td><td>Screening result — drives intervention trigger</td></tr>
+<tr><td class="json-path">[].comments</td><td><code>encounter_risk_assesments</code></td><td><code>comments</code></td><td>text</td><td>—</td><td>Direct copy</td><td>Clinical notes on screening result</td></tr>
+<tr><td class="json-path">[].start_date</td><td><code>encounter_risk_assesments</code></td><td><code>start_date</code></td><td>datetime</td><td>—</td><td>ISO-8601</td><td>Screening date — HEDIS compliance evidence</td></tr>
+<tr><td class="json-path">[].provider_nr</td><td><code>encounter_risk_assesments</code></td><td><code>provider_nr</code></td><td>int</td><td>—</td><td>Direct copy</td><td>Screener attribution</td></tr>
+</table></div>
+
+<!-- ── DOCUMENTS / MEDICAL RECORDS ── -->
+<div id="docs" class="sec-hdr">encounters[].documents[] — Medical Records (UNION) <span class="badge">Source: mra_chart_queue [B1] + adt_encounter [B2] → sp_load_medical_records_json_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation / Branch</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>mra_chart_queue.nr [B1]</code> / <code>adt_encounter.entry_nr [B2]</code></td><td><code>nr</code> / <code>entry_nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Branch-specific PK; source field differentiates</td><td>CDC identity per document record</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>Both branches</code></td><td><code>patient_id (alias member_id)</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy in both branches</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].encounterNr</td><td><code>Both branches</code></td><td><code>encounter_nr</code></td><td>bigint</td><td>—</td><td>Direct copy — links document to encounter spine</td><td>Cross-reference to encounter for context</td></tr>
+<tr><td class="json-path">[].source</td><td><code>mra_chart_queue.source [B1]</code> / <code>Hardcoded [B2]</code></td><td><code>source</code> / <code>'adt'</code></td><td>varchar</td><td>—</td><td>B1: Direct copy; B2: always 'adt'</td><td>Connective Health vs ADT — data lineage tag</td></tr>
+<tr><td class="json-path">[].pdfFilePath</td><td><code>mra_chart_queue.pdf_file_path [B1]</code> / <code>adt_encounter.pdf_file [B2]</code></td><td><code>pdf_file_path</code> / <code>pdf_file</code></td><td>varchar</td><td>—</td><td>Direct copy per branch</td><td>Medical record retrieval path — chart review workflow</td></tr>
+<tr><td class="json-path">[].createdDate</td><td><code>mra_chart_queue.create_time [B1]</code> / <code>adt_encounter.encounter_date [B2]</code></td><td><code>create_time</code> / <code>encounter_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y' per branch</td><td>Document creation/encounter date — record age</td></tr>
+<tr><td class="json-path">[].followUpDate</td><td><code>mra_chart_queue.follow_up_date [B1]</code> / <code>adt_encounter.encounter_date [B2]</code></td><td><code>follow_up_date</code> / <code>encounter_date</code></td><td>date</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y' per branch</td><td>Chart review follow-up due date — queue management</td></tr>
+<tr><td class="json-path">[].queueStatus</td><td><code>mra_chart_queue [B1 only]</code></td><td><code>queue_status</code></td><td>int</td><td>—</td><td>B1: Direct copy (5=complete, 2=review, 3=pending); B2: null</td><td>Chart queue workflow status — review pipeline state</td></tr>
+</table></div>
+
+<!-- ── TRANSPORT ── -->
+<div id="transport" class="sec-hdr">encounters[].transport[] <span class="badge">Source: transportation_benefit → sp_load_transport_benefits_json_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>transportation_benefit</code></td><td><code>nr</code></td><td>int</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per transport record</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>transportation_benefit</code></td><td><code>orig_id</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].encounterNr</td><td><code>transportation_benefit</code></td><td><code>encounter_nr</code></td><td>bigint</td><td>—</td><td>Direct copy</td><td>Links transport to encounter spine</td></tr>
+<tr><td class="json-path">[].date</td><td><code>transportation_benefit</code></td><td><code>date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Transport service date</td></tr>
+<tr><td class="json-path">[].mode</td><td><code>transportation_benefit</code></td><td><code>mode</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Transport modality — benefit utilization tracking</td></tr>
+<tr><td class="json-path">[].eligibleRides</td><td><code>transportation_benefit</code></td><td><code>eligible_rides</code></td><td>int</td><td>—</td><td>Direct copy</td><td>Remaining ride benefit — SDOH access metric</td></tr>
+<tr><td class="json-path">[].rideBookedBy</td><td><code>transportation_benefit</code></td><td><code>ride_booked_by</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Staff member who booked ride — workflow attribution</td></tr>
+<tr><td class="json-path">[].cost</td><td><code>transportation_benefit</code></td><td><code>cost_of_the_ride</code></td><td>varchar</td><td>—</td><td>Cast to decimal</td><td>Transport cost — supplemental benefit spend tracking</td></tr>
+<tr><td class="json-path">[].company</td><td><code>transportation_benefit</code></td><td><code>transportation_company</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Vendor — contract performance tracking</td></tr>
+<tr><td class="json-path">[].pickupAddress</td><td><code>transportation_benefit</code></td><td><code>pickup_address</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Patient origin location — scheduling and routing</td></tr>
+<tr><td class="json-path">[].dropoffAddress</td><td><code>transportation_benefit</code></td><td><code>dropoff_address</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Destination location — facility network usage</td></tr>
+<tr><td class="json-path">[].mapDataStatus</td><td><code>transportation_benefit</code></td><td><code>map_data_status</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Address geocoding/verification status</td></tr>
+<tr><td class="json-path">[].notes</td><td><code>transportation_benefit</code></td><td><code>notes</code></td><td>text</td><td>—</td><td>Direct copy</td><td>Clinical/operational notes on transport request</td></tr>
+<tr><td class="json-path">[].facilityName</td><td><code>transportation_benefit</code></td><td><code>facility_name</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Destination facility — network usage analytics</td></tr>
+<tr><td class="json-path">[].facilitySubName</td><td><code>transportation_benefit</code></td><td><code>facility_sub_name</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Sub-facility/department destination</td></tr>
+<tr><td class="json-path">[].dceProviderName</td><td><code>transportation_benefit</code></td><td><code>dce_provider_name</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>DCE attributed provider for this transport event</td></tr>
+<tr><td class="json-path">[].memberType</td><td><code>transportation_benefit</code></td><td><code>member_type</code></td><td>varchar</td><td>—</td><td>Direct copy (Medicare/Medicaid)</td><td>Member benefit type — eligibility rule gate</td></tr>
+</table></div>
+
+<!-- ── HOME PROGRAM ── -->
+<div id="homeprog" class="sec-hdr">encounters[].home_program[] <span class="badge">Source: in_home_patient_program → sp_load_home_program_json_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>in_home_patient_program</code></td><td><code>nr</code></td><td>int</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per home program visit</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>in_home_patient_program</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].encounterNr</td><td><code>in_home_patient_program</code></td><td><code>encounter_nr</code></td><td>bigint</td><td>—</td><td>Direct copy</td><td>Links home program visit to discharge encounter</td></tr>
+<tr><td class="json-path">[].dateRequest</td><td><code>in_home_patient_program</code></td><td><code>date_request</code></td><td>date</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Post-discharge referral date — TCM window start</td></tr>
+<tr><td class="json-path">[].dateOfAppoint</td><td><code>in_home_patient_program</code></td><td><code>date_of_appoint</code></td><td>date</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Scheduled visit date — scheduling compliance tracking</td></tr>
+<tr><td class="json-path">[].dischargDate</td><td><code>in_home_patient_program</code></td><td><code>discharg_date</code></td><td>date</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Program discharge date — episode end</td></tr>
+<tr><td class="json-path">[].status</td><td><code>in_home_patient_program</code></td><td><code>status</code></td><td>varchar(250)</td><td>—</td><td>Direct copy</td><td>Visit completion status — TCM compliance flag</td></tr>
+<tr><td class="json-path">[].appointmentType</td><td><code>in_home_patient_program</code></td><td><code>appointment_type</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Visit type — home visit vs telehealth classification</td></tr>
+<tr><td class="json-path">[].programVendor</td><td><code>in_home_patient_program</code></td><td><code>program_vendor</code></td><td>varchar(250)</td><td>—</td><td>Direct copy</td><td>Vendor — performance and SLA tracking</td></tr>
+<tr><td class="json-path">[].receivedVisitSummary</td><td><code>in_home_patient_program</code></td><td><code>recieved_visit_summary</code></td><td>varchar(250)</td><td>—</td><td>Cast to boolean (1/0)</td><td>Clinical handoff confirmation — TCM documentation gate</td></tr>
+<tr><td class="json-path">[].notes</td><td><code>in_home_patient_program</code></td><td><code>notes</code></td><td>text</td><td>—</td><td>Direct copy</td><td>Clinical notes on home visit — care manager context</td></tr>
+</table></div>
+
+<!-- ── ENCOUNTER MEDICATIONS ── -->
+<div id="encmeds" class="sec-hdr">encounters[].encounter_medications[] <span class="badge">Source: cclf_encounter_patient_medication</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>cclf_encounter_patient_medication</code></td><td><code>id</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per encounter medication line</td></tr>
+<tr><td class="json-path">[].ndc_id</td><td><code>cclf_encounter_patient_medication</code></td><td><code>NDCID</code></td><td>varchar(50)</td><td>—</td><td>Direct copy</td><td>NDC for medication reconciliation</td></tr>
+<tr><td class="json-path">[].rxnorm_id</td><td><code>cclf_encounter_patient_medication</code></td><td><code>RxnormID</code></td><td>varchar(30)</td><td>—</td><td>Direct copy</td><td>RxNorm — drug class analytics, interaction checking</td></tr>
+<tr><td class="json-path">[].medication_name</td><td><code>cclf_encounter_patient_medication</code></td><td><code>medications</code></td><td>varchar(255)</td><td>—</td><td>Direct copy</td><td>Medication name at encounter</td></tr>
+<tr><td class="json-path">[].dose / dose_unit</td><td><code>cclf_encounter_patient_medication</code></td><td><code>dose</code> / <code>dose_unit</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Dosing — reconciliation against outpatient rx</td></tr>
+<tr><td class="json-path">[].start_date / stop_date</td><td><code>cclf_encounter_patient_medication</code></td><td><code>start_date</code> / <code>stop_date</code></td><td>datetime</td><td>—</td><td>ISO-8601</td><td>Inpatient administration window</td></tr>
+<tr><td class="json-path">[].delete_status</td><td><code>cclf_encounter_patient_medication</code></td><td><code>delete_status</code></td><td>varchar(100)</td><td>—</td><td>Direct copy ('n'=active)</td><td>Soft-delete flag for med reconciliation</td></tr>
+</table></div>
+
+<!-- ── LABS (ACTIVE) ── -->
+<div id="labs" class="sec-hdr">patient.labs[] — Active Labs <span class="badge">Source: cpoe_result + cpoe_result_values + cpoe_item + cpoe_item_details + cpoe_orders → sp_load_labs_test_json_v2 (active; sp_load_patients_labs_v2 deprecated)</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>cpoe_result_values</code></td><td><code>nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per lab result line</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>cpoe_result</code></td><td><code>patient_id</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation — labs are patient-level not encounter-embedded</td></tr>
+<tr><td class="json-path">[].dos</td><td><code>cpoe_result</code></td><td><code>result_date</code></td><td>date</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Lab result date — trend analysis, HEDIS measure date evidence</td></tr>
+<tr><td class="json-path">[].itemId</td><td><code>cpoe_item_details</code></td><td><code>item_id</code></td><td>int</td><td>—</td><td>JOIN cpoe_result_values → cpoe_item_details</td><td>Lab item reference — range lookup key</td></tr>
+<tr><td class="json-path">[].testName</td><td><code>cpoe_item</code></td><td><code>item_name</code></td><td>varchar</td><td>—</td><td>JOIN via item_id; Direct copy</td><td>Human-readable test name — display and search</td></tr>
+<tr><td class="json-path">[].result</td><td><code>cpoe_result_values</code></td><td><code>notes</code></td><td>text</td><td>—</td><td>Direct copy (raw result value stored in notes column)</td><td>Clinical result value — care gap evidence, threshold alerting</td></tr>
+<tr><td class="json-path">[].valRange</td><td><code>cpoe_item_details</code></td><td><code>CONCAT(min_val,' - ',max_val)</code></td><td>float</td><td>—</td><td>CONCAT into range string</td><td>Normal range — abnormal flag calculation</td></tr>
+<tr><td class="json-path">[].alertValue</td><td><code>cpoe_item_details</code></td><td><code>alert_value</code></td><td>varchar</td><td>—</td><td>Direct copy (H/L/C)</td><td>Critical value flag — urgent care trigger for care manager</td></tr>
+<tr><td class="json-path">[].provider</td><td><code>cpoe_orders</code></td><td><code>CONCAT(order_provider_family_name,',',order_provider_given_name)</code></td><td>varchar</td><td>—</td><td>LEFT JOIN on order_id; CONCAT</td><td>Ordering provider — attribution and follow-up routing</td></tr>
+</table></div>
+
+<!-- ── MEDICATIONS ── -->
+<div id="meds" class="sec-hdr">patient.medications[] <span class="badge">Source: drfirst_patient_medications → sp_load_patients_medications_v2 | summary → sp_load_patients_medications_summary_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>drfirst_patient_medications</code></td><td><code>nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy — source table auto-increment PK; immutable; NDCID + start_date composite is a business key that can change on correction, not a stable identity</td><td>CDC identity per medication row — stable internal key; use ndcId + patientId for dedup logic separately</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>drfirst_patient_medications</code></td><td><code>patientid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].ndcId</td><td><code>drfirst_patient_medications</code></td><td><code>NDCID</code></td><td>varchar(50)</td><td>—</td><td>IFNULL → 'UNK'</td><td>NDC code — drug class, formulary validation</td></tr>
+<tr><td class="json-path">[].rxnormId</td><td><code>drfirst_patient_medications</code></td><td><code>RxnormID</code></td><td>varchar(30)</td><td>—</td><td>IFNULL → 'UNK'</td><td>RxNorm code — drug interaction, HEDIS PDC measure</td></tr>
+<tr><td class="json-path">[].medicationName</td><td><code>drfirst_patient_medications</code></td><td><code>medications</code></td><td>text</td><td>—</td><td>IFNULL → ''</td><td>Brand medication name — display label</td></tr>
+<tr><td class="json-path">[].genericName</td><td><code>drfirst_patient_medications</code></td><td><code>generic_name</code></td><td>varchar(255)</td><td>—</td><td>Direct copy</td><td>Generic name — substitution analytics</td></tr>
+<tr><td class="json-path">[].dosageSchedule</td><td><code>drfirst_patient_medications</code></td><td><code>SCHEDULE</code></td><td>varchar(50)</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Dosing frequency (BID/QD/TID) — adherence barrier detection</td></tr>
+<tr><td class="json-path">[].dosageInstruction</td><td><code>drfirst_patient_medications</code></td><td><code>CONCAT_WS action, dose, dose_unit, rout, dose_timming…</code></td><td>varchar</td><td>—</td><td><span class="computed">Computed</span> CONCAT_WS with TRIM; IFNULL → 'Unknown'</td><td>Patient-readable sig — engagement portal display</td></tr>
+<tr><td class="json-path">[].startDate</td><td><code>drfirst_patient_medications</code></td><td><code>start_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT; guard 0000-00-00 → ''</td><td>Active medication start — polypharmacy analysis</td></tr>
+<tr><td class="json-path">[].stopDate</td><td><code>drfirst_patient_medications</code></td><td><code>stop_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT; guard 0000-00-00 → ''</td><td>Medication end date — active list filter</td></tr>
+<tr><td class="json-path">[].fillDate</td><td><code>drfirst_patient_medications</code></td><td><code>fill_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT; guard 0000-00-00 → ''</td><td>Fill date — PDC calculation anchor</td></tr>
+<tr><td class="json-path">[].quantity</td><td><code>drfirst_patient_medications</code></td><td><code>quantity</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Days supply — PDC numerator calculation</td></tr>
+<tr><td class="json-path">[].quantityUnit</td><td><code>drfirst_patient_medications</code></td><td><code>quantity_unit</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Unit for quantity — supply calculation precision</td></tr>
+<tr><td class="json-path">[].durationDays</td><td><code>drfirst_patient_medications</code></td><td><code>duration</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Prescribed duration — adherence window calculation</td></tr>
+<tr><td class="json-path">[].numberOfRefills</td><td><code>drfirst_patient_medications</code></td><td><code>refills</code></td><td>varchar(50)</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Authorized refills — adherence risk indicator</td></tr>
+<tr><td class="json-path">[].prescribedDoctor</td><td><code>drfirst_patient_medications</code></td><td><code>prescribed_doctor</code></td><td>varchar(50)</td><td>—</td><td>IFNULL → 'UNK'</td><td>Prescriber name — attribution analytics</td></tr>
+<tr><td class="json-path">[].riskIndicator</td><td><code>drfirst_patient_medications</code></td><td><code>risk_indicator</code></td><td>varchar(20)</td><td>—</td><td>IFNULL → 'UNK'</td><td>High-risk medication flag — HEDIS drug safety measure</td></tr>
+<tr><td class="json-path">[].source</td><td><code>drfirst_patient_medications</code></td><td><code>source</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Prescription source — eRx vs manual entry</td></tr>
+<tr><td class="json-path">[].deleteStatus</td><td><code>drfirst_patient_medications</code></td><td><code>delete_status</code></td><td>varchar(100)</td><td>—</td><td>IFNULL → 'UNK' ('n'=active)</td><td>Soft-delete flag — active medication list filter</td></tr>
+<tr><td class="json-path">[].reconciledStatus</td><td><code>drfirst_patient_medications</code></td><td><code>reconciled_status</code></td><td>varchar(10)</td><td>—</td><td>Direct copy</td><td>Medication reconciliation status — compliance gate</td></tr>
+<tr><td class="json-path">[].monthlyQty</td><td><code>drfirst_patient_medications (CTE: monthly_med)</code></td><td><code>qt_by_month for current fill month</code></td><td>int</td><td>—</td><td><span class="computed">Computed</span> — quantity by month; IFNULL → -1</td><td>Monthly supply quantity — PDC trend tracking</td></tr>
+<tr><td class="json-path">[].criticalRefill</td><td><code>drfirst_patient_medications (CTE: med_scheme)</code></td><td><code>JSON_OBJECT { history: [{quantity, last_start_date}] }</code></td><td>—</td><td>—</td><td><span class="multi">Nested JSON</span> — refill history aggregated per RxnormID</td><td>Critical refill history — gap detection for chronic medications</td></tr>
+<tr class="grp"><td colspan="7">Medication Adherence Summary — sp_load_patients_medications_summary_v2 → patient.medication_adherence{}</td></tr>
+<tr><td class="json-path">medication_adherence.patientId</td><td><code>drfirst_patient_medications</code></td><td><code>patientid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">medication_adherence.measurementPeriodStart</td><td><code>drfirst_patient_medications</code></td><td><code>start_date</code></td><td>date</td><td>—</td><td>ISO-8601 '%Y-%m-%d'; routing-config: drfirst_patient_medications.start_date — replaces param_year int</td><td>Measurement period start date — PDC window anchor</td></tr>
+<tr><td class="json-path">medication_adherence.coveredDays</td><td><code>drfirst_patient_medications</code></td><td><code>LEAST(SUM(quantity), 365)</code></td><td>varchar</td><td>—</td><td><span class="computed">Computed</span> — SUM capped at 365; WHERE fill_date IS NOT NULL AND delete_status='n'</td><td>PDC numerator — days of supply covered in period</td></tr>
+<tr><td class="json-path">medication_adherence.rxAdherencePct</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="computed">Computed</span>: covered_days / 365 × 100; ROUND(2)</td><td>HEDIS PDC measure — STAR rating input</td></tr>
+</table></div>
+
+<!-- ── ASSESSMENTS ── -->
+<div id="assessments" class="sec-hdr">patient.assessments[] <span class="badge">Source: mra_assessments_and_screenings</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>mra_assessments_and_screenings</code></td><td><code>nr</code></td><td>int</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per assessment record</td></tr>
+<tr><td class="json-path">[].account_id</td><td><code>adt_patient</code></td><td><code>account_id</code></td><td>varchar(60)</td><td><span class="fk">Correlation</span></td><td>Carried from patient root via origid</td><td>Cross-section lookup</td></tr>
+<tr><td class="json-path">[].tool</td><td><code>mra_assessments_and_screenings</code></td><td><code>assessment_tools</code></td><td>varchar</td><td>—</td><td>IFNULL→'Unknown'</td><td>Assessment tool (PHQ-9, GAD-7, CAGE…)</td></tr>
+<tr><td class="json-path">[].date_completed</td><td><code>mra_assessments_and_screenings</code></td><td><code>date_completed</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>Assessment date — HEDIS depression screening measure</td></tr>
+<tr><td class="json-path">[].acuity</td><td><code>mra_assessments_and_screenings</code></td><td><code>acuity</code></td><td>varchar</td><td>—</td><td>IFNULL→'Unknown'</td><td>Severity level — risk stratification tier</td></tr>
+<tr><td class="json-path">[].score</td><td><code>mra_assessments_and_screenings</code></td><td><code>score</code></td><td>varchar</td><td>—</td><td>IFNULL→'Unknown'</td><td>Numeric score — clinical threshold alerting</td></tr>
+<tr><td class="json-path">[].completed_by</td><td><code>mra_assessments_and_screenings</code></td><td><code>completed_by</code></td><td>varchar</td><td>—</td><td>IFNULL→'Unknown'</td><td>Clinician attribution for assessment</td></tr>
+<tr><td class="json-path">[].notes</td><td><code>mra_assessments_and_screenings</code></td><td><code>notes</code></td><td>text</td><td>—</td><td>IFNULL→'Unknown'</td><td>Clinical notes — context for care planning</td></tr>
+</table></div>
+
+<!-- ── CARE PLANS ── -->
+<div id="careplans" class="sec-hdr">patient.care_plans[] <span class="badge">Source: care_plan_patient + care_plan + mra_dm_guideline + mra_dm_key_assocs + careplan_patient_optiontype → sp_load_patients_careplans_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>care_plan_patient</code></td><td><code>id</code></td><td>int</td><td><span class="pk">PK</span></td><td>Direct copy; IFNULL → 'Unknown'</td><td>CDC identity per care plan</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>care_plan_patient</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].planId</td><td><code>care_plan</code></td><td><code>careplan_id</code></td><td>int</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Plan template ID — versioned care plan reference</td></tr>
+<tr><td class="json-path">[].planName</td><td><code>care_plan</code></td><td><code>careplan_name</code></td><td>varchar</td><td>—</td><td>LEFT JOIN care_plan; IFNULL → 'Unknown'</td><td>Plan name — care manager dashboard display</td></tr>
+<tr><td class="json-path">[].careplanStatus</td><td><code>care_plan_patient</code></td><td><code>careplan_status</code></td><td>enum</td><td>—</td><td>Direct copy (Draft/Finalized/Active)</td><td>Plan lifecycle status — active plan filter</td></tr>
+<tr><td class="json-path">[].source</td><td><code>care_plan_patient</code></td><td><code>source</code></td><td>varchar</td><td>—</td><td>Direct copy ('BSTREAM' / 'MCG' / other)</td><td>Plan source system — BSTREAM vs MCG guideline origin</td></tr>
+<tr><td class="json-path">[].createdDate</td><td><code>care_plan_patient</code></td><td><code>created_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Plan creation date</td></tr>
+<tr><td class="json-path">[].planStartDate</td><td><code>care_plan_patient</code></td><td><code>plan_start_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Effective start date — plan activation date for billing</td></tr>
+<tr><td class="json-path">[].updatedDate</td><td><code>care_plan_patient</code></td><td><code>updated_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Last update date — plan freshness indicator</td></tr>
+<tr><td class="json-path">[].ackedDate</td><td><code>care_plan_patient</code></td><td><code>acked_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Provider acknowledgement date — compliance evidence</td></tr>
+<tr><td class="json-path">[].ackedBy</td><td><code>care_plan_patient</code></td><td><code>acked_by</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Acknowledging provider — attribution audit trail</td></tr>
+<tr><td class="json-path">[].inactiveDate</td><td><code>care_plan_patient</code></td><td><code>plan_inactive_datetime</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Plan expiry — open/stale plan detection</td></tr>
+<tr><td class="json-path">[].assignedCm</td><td><code>care_plan_patient</code></td><td><code>assign_pers</code></td><td>varchar(125)</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Assigned care manager — workload attribution</td></tr>
+<tr><td class="json-path">[].reassessment</td><td><code>care_plan_patient</code></td><td><code>reassessment</code></td><td>varchar(255)</td><td>—</td><td>IFNULL → 'Unknown'; cast to int for rule engine</td><td>Reassessment interval (days) — overdue plan detection</td></tr>
+<tr><td class="json-path">[].frequency</td><td><code>care_plan_patient</code></td><td><code>frequency</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Follow-up frequency — care touchpoint scheduling rule</td></tr>
+<tr><td class="json-path">[].hsim</td><td><code>care_plan_patient</code></td><td><code>hsim</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Health Similarity Index — MCG guideline matching key</td></tr>
+<tr><td class="json-path">[].guidelineNr</td><td><code>mra_dm_guideline</code></td><td><code>MAX(guideline_nr)</code></td><td>int</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Guideline number — links to clinical decision content</td></tr>
+<tr><td class="json-path">[].guidelineTitle</td><td><code>mra_dm_guideline</code></td><td><code>guidelinetitle</code></td><td>varchar</td><td>—</td><td>JOIN via guideline_nr; IFNULL → 'Unknown'</td><td>Guideline title — clinical decision support label</td></tr>
+<tr><td class="json-path">[].guidelineEdition</td><td><code>mra_dm_guideline</code></td><td><code>edition</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Guideline version — content currency tracking</td></tr>
+<tr><td class="json-path">[].product</td><td><code>mra_dm_guideline</code></td><td><code>product</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Guideline product line — MCG vs BSTREAM differentiation</td></tr>
+<tr><td class="json-path">[].contentOwner</td><td><code>mra_dm_guideline</code></td><td><code>contentowner</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Guideline content owner — compliance responsibility</td></tr>
+<tr><td class="json-path">[].keyword</td><td><code>mra_dm_key_assocs</code></td><td><code>keyword</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Guideline keyword — searchability for rule matching</td></tr>
+<tr><td class="json-path">[].mraProviderStatus</td><td><code>care_plan_patient</code></td><td><code>mra_provider_status</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Provider engagement status on this plan</td></tr>
+<tr><td class="json-path">[].categoryId</td><td><code>care_plan_patient</code></td><td><code>category_id</code></td><td>int</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Plan category — drives program enrollment rules</td></tr>
+<tr><td class="json-path">[].planPath</td><td><code>care_plan_patient</code></td><td><code>plan_path</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Care pathway name — clinical workflow label</td></tr>
+<tr><td class="json-path">[].careplanSummaryContent</td><td><code>care_plan_patient</code></td><td><code>careplan_summary_content</code></td><td>text</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Narrative summary — display in patient portal / care manager</td></tr>
+<tr><td class="json-path">[].editUrl</td><td><code>Computed</code></td><td>—</td><td>—</td><td>—</td><td><span class="computed">Computed</span> CASE source → URL template (BSTREAM / MCG / default)</td><td>Deep-link to care plan editor — workflow shortcut</td></tr>
+<tr><td class="json-path">[].interventionCount</td><td><code>careplan_patient_optiontype (CTE)</code></td><td><code>COUNT where option_type=5</code></td><td>—</td><td>—</td><td><span class="computed">Computed</span>: CONCAT(achieved/total) e.g. '3/5'</td><td>Intervention progress — plan effectiveness KPI</td></tr>
+<tr><td class="json-path">[].barrierCount</td><td><code>careplan_patient_optiontype (CTE)</code></td><td><code>COUNT where option_type=2</code></td><td>—</td><td>—</td><td><span class="computed">Computed</span>: CONCAT(achieved/total)</td><td>Barrier resolution tracking</td></tr>
+<tr><td class="json-path">[].goalCount</td><td><code>mra_dm_goals_set (CTE)</code></td><td><code>COUNT where data_option_id=1</code></td><td>—</td><td>—</td><td><span class="computed">Computed</span>: CONCAT(achieved/total)</td><td>Goal achievement — quality reporting KPI</td></tr>
+<tr><td class="json-path">[].planGoals</td><td><code>care_plan_patient</code></td><td><code>plan_goals</code></td><td>longtext</td><td>—</td><td>fn_escape_html applied; IFNULL → 'Unknown'</td><td>Patient goals narrative — engagement tracking</td></tr>
+<tr><td class="json-path">[].planNotes</td><td><code>care_plan_patient</code></td><td><code>plan_notes</code></td><td>text</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Clinical notes on plan — care manager documentation</td></tr>
+<tr><td class="json-path">[].planTreatment</td><td><code>care_plan_patient</code></td><td><code>plan_treatment</code></td><td>text</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Treatment plan narrative — clinical decision support</td></tr>
+<tr><td class="json-path">[].internalData.planRiskFactor</td><td><code>care_plan_patient</code></td><td><code>plan_riskfactor</code></td><td>mediumtext</td><td>—</td><td><span class="multi">Nested JSON</span> — Direct copy inside internal_data object</td><td>Risk factors driving this plan — SDOH linkage</td></tr>
+<tr><td class="json-path">[].internalData.planBarriers</td><td><code>care_plan_patient</code></td><td><code>plan_barriers</code></td><td>mediumtext</td><td>—</td><td><span class="multi">Nested JSON</span></td><td>Care barriers — SDOH intervention triggers</td></tr>
+<tr><td class="json-path">[].internalData.results</td><td><code>careplan_patient_optiontype (CTE)</code></td><td><code>careplan_results</code></td><td>—</td><td>—</td><td><span class="multi">Nested JSON_OBJECT</span> from careplan_results CTE</td><td>Full plan results payload — rule engine detail read</td></tr>
+</table></div>
+
+<!-- ── ALERTS ── -->
+<div id="alerts" class="sec-hdr">patient.alerts[] <span class="badge">Source: mra_scorecard_alerts + adt_encounter → sp_load_patients_alerts_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>mra_scorecard_alerts</code></td><td><code>nr</code></td><td>bigint</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per alert</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>mra_scorecard_alerts</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].encounterNr</td><td><code>adt_encounter</code></td><td><code>encounter_nr WHERE entry_nr=ref_id</code></td><td>bigint</td><td>—</td><td>Correlated subquery on ref_id → entry_nr; NULL if no match</td><td>Links alert to encounter spine for context</td></tr>
+<tr><td class="json-path">[].alertType</td><td><code>mra_scorecard_alerts</code></td><td><code>type</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown' (Hedis/Quality, HCC, ED/Inpatient…)</td><td>Alert category — drives care manager workflow routing</td></tr>
+<tr><td class="json-path">[].addedDate</td><td><code>mra_scorecard_alerts</code></td><td><code>added_date</code> or <code>ref_date</code></td><td>datetime</td><td>—</td><td>CASE: Hedis/HCC → added_date; others → ref_date; DATE_FORMAT '%m/%d/%Y'</td><td>Alert date — aging and SLA tracking</td></tr>
+<tr><td class="json-path">[].ackedDate</td><td><code>mra_scorecard_alerts</code></td><td><code>ack_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Acknowledgement date — workflow audit trail</td></tr>
+<tr><td class="json-path">[].ackBy</td><td><code>mra_scorecard_alerts</code></td><td><code>ack_by</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Acknowledging care manager — workload attribution</td></tr>
+<tr><td class="json-path">[].ackNotes</td><td><code>mra_scorecard_alerts</code></td><td><code>ack_notes</code></td><td>text</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Acknowledgement notes — clinical context for audit</td></tr>
+<tr><td class="json-path">[].resolvedDate</td><td><code>mra_scorecard_alerts</code></td><td><code>resolved_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'; IFNULL → null</td><td>Resolution date — open alert aging report</td></tr>
+<tr><td class="json-path">[].resolvedBy</td><td><code>mra_scorecard_alerts</code></td><td><code>resolved_by</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Resolver attribution — quality audit trail</td></tr>
+<tr><td class="json-path">[].currentStatus</td><td><code>mra_scorecard_alerts</code></td><td><code>current_status</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown' (1=Pending, 3=Acknowledged, 4=Resolved)</td><td>Workflow status code — dashboard filter</td></tr>
+<tr><td class="json-path">[].currentStatusDescription</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="computed">Computed</span> CASE 1→'Pending' 3→'Acknowledged' 4→'Resolved'</td><td>Human-readable status — display label for care manager</td></tr>
+<tr><td class="json-path">[].originalStatus</td><td><code>mra_scorecard_alerts</code></td><td><code>original_status</code></td><td>varchar</td><td>—</td><td>CASE 0/1/2 cast to string</td><td>Original status at alert creation — change tracking</td></tr>
+<tr><td class="json-path">[].refId</td><td><code>mra_scorecard_alerts</code></td><td><code>ref_id</code></td><td>bigint</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Source reference ID — links to source entity (encounter, etc.)</td></tr>
+<tr><td class="json-path">[].refDescription</td><td><code>mra_scorecard_alerts</code></td><td><code>ref_description</code></td><td>varchar</td><td>—</td><td>IFNULL → ''</td><td>Alert reference description — human-readable context</td></tr>
+<tr><td class="json-path">[].refDetail</td><td><code>mra_scorecard_alerts</code></td><td><code>ref_detail</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Detailed reference info — HCC gap list, ICD codes</td></tr>
+<tr><td class="json-path">[].versionNo</td><td><code>mra_scorecard_alerts</code></td><td><code>version_no</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>HCC model version — v24/v28 tracking</td></tr>
+</table></div>
+
+<!-- ── COMMUNICATIONS ── -->
+<div id="comms" class="sec-hdr">patient.communications[] <span class="badge">Source: reminder_events + message_system + message_recepient → sp_load_patients_communications_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>reminder_events</code></td><td><code>reminder_id</code></td><td>int</td><td><span class="pk">PK</span></td><td>IFNULL → 'Unknown'</td><td>CDC identity per communication event</td></tr>
+<tr><td class="json-path">[].patientId</td><td><code>reminder_events</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">[].reminderName</td><td><code>reminder_events</code></td><td><code>reminder_name</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Outreach event label — care manager notification display</td></tr>
+<tr><td class="json-path">[].reminderDescription</td><td><code>reminder_events</code></td><td><code>reminder_des</code></td><td>text</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Full description of the communication event</td></tr>
+<tr><td class="json-path">[].category</td><td><code>reminder_events</code></td><td><code>category</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Communication category — medication/appointment/general</td></tr>
+<tr><td class="json-path">[].reminderDate</td><td><code>reminder_events</code></td><td><code>reminder_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y %H:%i:%s'</td><td>Outreach scheduled date — touch frequency analytics</td></tr>
+<tr><td class="json-path">[].createdDate</td><td><code>reminder_events</code></td><td><code>created_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Record creation date — outreach cadence tracking</td></tr>
+<tr><td class="json-path">[].reminderStatus</td><td><code>reminder_events</code></td><td><code>reminder_status</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Sent/pending — outreach completion status</td></tr>
+<tr><td class="json-path">[].readStatusColor</td><td><code>message_recepient</code></td><td><code>AES_DECRYPT(message_status,'mKey')</code></td><td>varchar</td><td>—</td><td>'white' (no msg) / 'yellow' (unread exists) / 'green' (all read)</td><td>Message read status — engagement quality signal for dashboard</td></tr>
+<tr><td class="json-path">[].reminderSource</td><td><code>reminder_events</code></td><td><code>reminder_source</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown' (CM/Portal/Auto…)</td><td>Outreach channel — multi-channel analytics</td></tr>
+<tr><td class="json-path">[].isEmail</td><td><code>reminder_events</code></td><td><code>reminder_isemail</code></td><td>varchar</td><td>—</td><td>Cast to boolean</td><td>Email vs phone — channel preference flag</td></tr>
+<tr><td class="json-path">[].reminderEmailAddress</td><td><code>reminder_events</code></td><td><code>reminder_emailaddress</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Email destination — delivery audit trail</td></tr>
+<tr><td class="json-path">[].signature</td><td><code>reminder_events</code></td><td><code>signature</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Sender signature — care team identity on outreach</td></tr>
+<tr><td class="json-path">[].reminderSetting</td><td><code>reminder_events</code></td><td><code>reminder_setting</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Scheduling rule setting for this reminder type</td></tr>
+<tr><td class="json-path">[].reminderThreshold</td><td><code>reminder_events</code></td><td><code>reminder_threshold</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Trigger threshold — rule-based outreach threshold value</td></tr>
+<tr><td class="json-path">[].createdBy</td><td><code>reminder_events</code></td><td><code>created_by</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Care team member who created the reminder — attribution</td></tr>
+<tr><td class="json-path">[].otherId</td><td><code>reminder_events</code></td><td><code>other_id</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>External reference ID — cross-system linkage</td></tr>
+</table></div>
+
+<!-- ── SDOH ── -->
+<div id="sdoh" class="sec-hdr">patient.sdoh{} — meal_plans[] + reward_programs[] <span class="badge">Source: sdoh_meal_plan + option_code_values → sp_load_meal_plan_json_v2 | chronic_disease_reward_program → sp_load_reward_program_json_v2</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">meal_plans[].id</td><td><code>sdoh_meal_plan</code></td><td><code>nr</code></td><td>int</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per meal plan order</td></tr>
+<tr><td class="json-path">meal_plans[].patientId</td><td><code>sdoh_meal_plan</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">meal_plans[].createdDate</td><td><code>sdoh_meal_plan</code></td><td><code>created_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Plan creation date — program enrollment tracking</td></tr>
+<tr><td class="json-path">meal_plans[].source</td><td><code>sdoh_meal_plan</code></td><td><code>source</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Data source — system of record for meal plan</td></tr>
+<tr><td class="json-path">meal_plans[].mealPlanLabel</td><td><code>option_code_values</code></td><td><code>Option_Label</code></td><td>varchar</td><td>—</td><td>LEFT JOIN Option_Value=product_sku AND Column_Order=60101</td><td>Human-readable plan name — avoids code lookup at query time</td></tr>
+<tr><td class="json-path">meal_plans[].mealType</td><td><code>sdoh_meal_plan</code></td><td><code>meal_type</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Dietary classification — diabetic/cardiac/renal</td></tr>
+<tr><td class="json-path">meal_plans[].orderId</td><td><code>sdoh_meal_plan</code></td><td><code>order_id</code></td><td>int</td><td>—</td><td>Direct copy</td><td>Fulfillment order ID — vendor order tracking</td></tr>
+<tr><td class="json-path">meal_plans[].orderStatus</td><td><code>sdoh_meal_plan</code></td><td><code>order_status</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Order lifecycle — SDOH benefit utilization tracking</td></tr>
+<tr><td class="json-path">meal_plans[].eligibilityStatus</td><td><code>sdoh_meal_plan</code></td><td><code>eligibility_status</code></td><td>varchar</td><td>—</td><td>IFNULL → 'Unknown'</td><td>Program eligibility — enrollment gate for meal benefit</td></tr>
+<tr><td class="json-path">meal_plans[].productSku</td><td><code>sdoh_meal_plan</code></td><td><code>product_sku</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Product SKU — vendor fulfillment tracking</td></tr>
+<tr><td class="json-path">meal_plans[].shipFrequencyId</td><td><code>sdoh_meal_plan</code></td><td><code>ship_frequency_id</code></td><td>int</td><td>—</td><td>Direct copy</td><td>Shipping frequency — recurring benefit schedule</td></tr>
+<tr><td class="json-path">meal_plans[].startDate</td><td><code>sdoh_meal_plan</code></td><td><code>start_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Benefit window start — overlap and gap detection</td></tr>
+<tr><td class="json-path">meal_plans[].endDate</td><td><code>sdoh_meal_plan</code></td><td><code>end_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Benefit window end — expiry detection</td></tr>
+<tr><td class="json-path">meal_plans[].notes</td><td><code>sdoh_meal_plan</code></td><td><code>notes</code></td><td>text</td><td>—</td><td>Direct copy</td><td>Clinical/operational notes on meal plan</td></tr>
+<tr><td class="json-path">meal_plans[].assignedCm</td><td><code>sdoh_meal_plan</code></td><td><code>assigned_cm</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Care manager attribution for SDOH program</td></tr>
+<tr><td class="json-path">meal_plans[].createdBy</td><td><code>sdoh_meal_plan</code></td><td><code>created_by</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Staff who created the plan — workflow attribution</td></tr>
+<tr><td class="json-path">meal_plans[].updatedBy</td><td><code>sdoh_meal_plan</code></td><td><code>updated_by</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Last modifier — change audit trail</td></tr>
+<tr><td class="json-path">meal_plans[].updatedDate</td><td><code>sdoh_meal_plan</code></td><td><code>updated_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Last update date — plan freshness indicator</td></tr>
+<tr><td class="json-path">reward_programs[].id</td><td><code>chronic_disease_reward_program</code></td><td><code>nr</code></td><td>int</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per reward record</td></tr>
+<tr><td class="json-path">reward_programs[].patientId</td><td><code>chronic_disease_reward_program</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
+<tr><td class="json-path">reward_programs[].date</td><td><code>chronic_disease_reward_program</code></td><td><code>date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Reward event date — program timeline tracking</td></tr>
+<tr><td class="json-path">reward_programs[].program</td><td><code>chronic_disease_reward_program</code></td><td><code>program</code></td><td>varchar(255)</td><td>—</td><td>Direct copy</td><td>Program name — incentive program analytics</td></tr>
+<tr><td class="json-path">reward_programs[].chronicDisease</td><td><code>chronic_disease_reward_program</code></td><td><code>chronic_disease</code></td><td>varchar(20)</td><td>—</td><td>Direct copy</td><td>Links reward to chronic condition — engagement signal</td></tr>
+<tr><td class="json-path">reward_programs[].criteria</td><td><code>chronic_disease_reward_program</code></td><td><code>criteria</code></td><td>varchar(60)</td><td>—</td><td>Direct copy</td><td>Completion criterion — care gap closure evidence</td></tr>
+<tr><td class="json-path">reward_programs[].status</td><td><code>chronic_disease_reward_program</code></td><td><code>status</code></td><td>varchar(64)</td><td>—</td><td>Direct copy (Issued/Pending…)</td><td>Reward status — financial accounting</td></tr>
+<tr><td class="json-path">reward_programs[].associateName</td><td><code>chronic_disease_reward_program</code></td><td><code>associate_name</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Staff associate who processed reward — attribution</td></tr>
+<tr><td class="json-path">reward_programs[].giftCardAmount</td><td><code>chronic_disease_reward_program</code></td><td><code>gift_card_to_be_issued</code></td><td>varchar(20)</td><td>—</td><td>Cast to decimal</td><td>Incentive value — program cost and ROI tracking</td></tr>
+<tr><td class="json-path">reward_programs[].giftCardNumberIssued</td><td><code>chronic_disease_reward_program</code></td><td><code>gift_card_number_issued</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Gift card number — fulfillment audit trail</td></tr>
+<tr><td class="json-path">reward_programs[].giftCardReceived</td><td><code>chronic_disease_reward_program</code></td><td><code>gift_card_received</code></td><td>varchar(3)</td><td>—</td><td>Cast to boolean (1/0)</td><td>Delivery confirmation — fulfillment tracking</td></tr>
+<tr><td class="json-path">reward_programs[].addressVerified</td><td><code>chronic_disease_reward_program</code></td><td><code>address_verified</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Address verification status — delivery success gate</td></tr>
+</table></div>
+
+<!-- ── EMR APPOINTMENTS ── -->
+<div id="emrappt" class="sec-hdr">patient.emr_appointments[] <span class="badge">Source: allergies_medications (type IN ('encounter','appointment'))</span></div>
+<div class="tbl-wrap"><table>
+<tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr><td class="json-path">[].id</td><td><code>allergies_medications</code></td><td><code>appointmentid</code></td><td>varchar</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per EMR appointment</td></tr>
+<tr><td class="json-path">[].account_id</td><td><code>adt_patient</code></td><td><code>account_id</code></td><td>varchar(60)</td><td><span class="fk">Correlation</span></td><td>Carried from patient root</td><td>Cross-section lookup</td></tr>
+<tr><td class="json-path">[].encounter_date</td><td><code>allergies_medications</code></td><td><code>encounterdate</code></td><td>datetime</td><td>—</td><td>ISO-8601, LENGTH guard ≤19</td><td>EMR encounter date — PCP visit compliance</td></tr>
+<tr><td class="json-path">[].appointment_start</td><td><code>allergies_medications</code></td><td><code>appointmentstartdate</code></td><td>datetime</td><td>—</td><td>ISO-8601 datetime, LENGTH guard ≤19</td><td>Appointment scheduling analytics</td></tr>
+<tr><td class="json-path">[].closed_date</td><td><code>allergies_medications</code></td><td><code>closeddate</code></td><td>datetime</td><td>—</td><td>ISO-8601 datetime, LENGTH guard ≤19</td><td>Visit duration — efficiency analytics</td></tr>
+<tr><td class="json-path">[].encounter_type</td><td><code>allergies_medications</code></td><td><code>encountertype</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Visit type — AWV, follow-up, specialist</td></tr>
+<tr><td class="json-path">[].visit_name</td><td><code>allergies_medications</code></td><td><code>encountervisitname</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Named visit type — AWV detection for HEDIS</td></tr>
+<tr><td class="json-path">[].patient_status</td><td><code>allergies_medications</code></td><td><code>patientstatus</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Checked-in/out status — no-show analytics</td></tr>
+<tr><td class="json-path">[].type</td><td><code>allergies_medications</code></td><td><code>type</code></td><td>varchar</td><td>—</td><td>Direct copy ('encounter' or 'appointment')</td><td>Completed vs scheduled — gap detection</td></tr>
+</table></div>
+
+</div><!-- /section -->
+</body>
+</html>

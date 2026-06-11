@@ -1,0 +1,178 @@
+{
+  "mra_scorecard_alerts": {
+    "patient_id_col": "origid",
+    "change_date_col": "added_date",
+    "procedures": ["sp_load_patients_alerts_v2", "sp_load_hcc_summary_v2"]
+  },
+  "cpoe_result_values": {
+    "patient_id_col": null,
+    "change_date_col": null,
+    "join": {
+      "fk_col":         "result_id",
+      "table":          "cpoe_result",
+      "ref_col":        "result_id",
+      "patient_id_col": "patient_id",
+      "change_date_col": "result_date"
+    },
+    "procedures": ["sp_load_labs_test_json_v2"]
+  },
+  "drfirst_patient_medications": {
+    "patient_id_col": "patientid",
+    "change_date_col": "start_date",
+    "procedures": ["sp_load_patients_medications_v2", "sp_load_patients_medications_summary_v2"]
+  },
+  "reminder_events": {
+    "patient_id_col": "origid",
+    "change_date_col": "reminder_date",
+    "procedures": ["sp_load_patients_communications_v2", "sp_load_hie_feed_json_v2"]
+  },
+  "message_system": {
+    "patient_id_col": null,
+    "change_date_col": null,
+    "join": {
+      "fk_col":         "message_other_id",
+      "table":          "reminder_events",
+      "ref_col":        "reminder_id",
+      "patient_id_col": "origid",
+      "change_date_col": "reminder_date",
+      "extra_filter":   { "message_typ_sub_id": 10000 }
+    },
+    "procedures": ["sp_load_patients_communications_v2"]
+  },
+  "care_plan_patient": {
+    "patient_id_col": "origid",
+    "change_date_col": "created_date",
+    "procedures": ["sp_load_patients_careplans_v2"]
+  },
+  "careplan_results": {
+    "patient_id_col": null,
+    "change_date_col": null,
+    "join": {
+      "fk_col":         "care_id",
+      "table":          "care_plan_patient",
+      "ref_col":        "id",
+      "patient_id_col": "origid",
+      "change_date_col": "created_date"
+    },
+    "procedures": ["sp_load_patients_careplans_v2"]
+  },
+  "careplan_patient_optiontype": {
+    "patient_id_col": null,
+    "change_date_col": null,
+    "join": {
+      "fk_col":         "care_id",
+      "table":          "care_plan_patient",
+      "ref_col":        "id",
+      "patient_id_col": "origid",
+      "change_date_col": "created_date"
+    },
+    "procedures": ["sp_load_patients_careplans_v2"]
+  },
+  "cclf_encounter": {
+    "patient_id_col": "origid",
+    "change_date_col": "encounter_date",
+    "procedures": ["sp_load_patients_visits_v2"]
+  },
+  "mra4_encounter1": {
+    "patient_id_col": "patient_id",
+    "change_date_col": "enc_disch_date",
+    "procedures": ["sp_load_patients_visits_v2"]
+  },
+  "mra1_encounter": {
+    "patient_id_col": "patient_id",
+    "change_date_col": "enc_admit_date",
+    "procedures": ["sp_load_patients_visits_v2", "sp_load_outpatients_json_v2"]
+  },
+  "adt_encounter": {
+    "patient_id_col": "origid",
+    "change_date_col": "encounter_date",
+    "procedures": ["sp_load_patients_visits_v2", "sp_load_hie_feed_json_v2", "sp_load_medical_records_json_v2"]
+  },
+  "flowsheet_save_data": {
+    "patient_id_col": "orig_id",
+    "change_date_col": "created_date",
+    "procedures": ["sp_load_hedis_quality_v2"]
+  },
+  "flowsheet_save_data_det": {
+    "patient_id_col": null,
+    "change_date_col": null,
+    "join": {
+      "fk_col":         "flow_save_nr",
+      "table":          "flowsheet_save_data",
+      "ref_col":        "nr",
+      "patient_id_col": "orig_id",
+      "change_date_col": "created_date"
+    },
+    "procedures": ["sp_load_hedis_quality_v2"]
+  },
+  "allergies_medications": {
+    "patient_id_col": "origid",
+    "change_date_col": "encounterdate",
+    "procedures": ["sp_load_emr_appointments_json_v2"]
+  },
+  "mra_chart_queue": {
+    "patient_id_col": "origid",
+    "change_date_col": "follow_up_date",
+    "procedures": ["sp_load_medical_records_json_v2"]
+  },
+  "mra_uamcc_details": {
+    "patient_id_col": "origid",
+    "change_date_col": "service_date",
+    "procedures": ["sp_load_uamcc_summary_v2", "sp_load_uamcc_details_json_v2"]
+  },
+  "qip_uamcc_lambda": {
+    "patient_id_col": "origid",
+    "change_date_col": "year",
+    "procedures": ["sp_load_uamcc_summary_v2"]
+  },
+  "cclf_encounter_icd_codes": {
+    "patient_id_col": "patient_id",
+    "change_date_col": "onset_date",
+    "procedures": ["sp_load_diagnosis_codes_json_v2"]
+  },
+  "mra_raf_patient": {
+    "patient_id_col": "origid",
+    "change_date_col": "YEAR",
+    "procedures": ["sp_load_diagnosis_codes_json_v2", "sp_load_scores_json_v2"]
+  },
+  "adt_appointment": {
+    "patient_id_col": "origid",
+    "change_date_col": "date",
+    "procedures": ["sp_load_hie_feed_json_v2"]
+  },
+  "chronic_disease_reward_program": {
+    "patient_id_col": "origid",
+    "change_date_col": "date",
+    "procedures": ["sp_load_reward_program_json_v2"]
+  },
+  "in_home_patient_program": {
+    "patient_id_col": "origid",
+    "change_date_col": "discharg_date",
+    "procedures": ["sp_load_home_program_json_v2"]
+  },
+  "transportation_benefit": {
+    "patient_id_col": "orig_id",
+    "change_date_col": "date",
+    "procedures": ["sp_load_transport_benefits_json_v2"]
+  },
+  "sdoh_meal_plan": {
+    "patient_id_col": "origid",
+    "change_date_col": "created_date",
+    "procedures": ["sp_load_meal_plan_json_v2"]
+  },
+  "encounter_risk_assesments": {
+    "patient_id_col": "origid",
+    "change_date_col": "start_date",
+    "procedures": ["sp_load_screening_intn_asst_json_v2"]
+  },
+  "mra_assessments_and_screenings": {
+    "patient_id_col": "origid",
+    "change_date_col": "created_date",
+    "procedures": ["sp_load_assessments_screenings_v2"]
+  },
+  "dc_bene_alignment_rostr_m01": {
+    "patient_id_col": "mm_curr_mbi_id",
+    "change_date_col": "mm_date",
+    "procedures": ["sp_load_scores_json_v2"]
+  }
+}
