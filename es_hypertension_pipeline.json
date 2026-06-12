@@ -1,0 +1,333 @@
+{
+  "_comment": "Elasticsearch pipeline for CMS165 Hypertension Management measure (PC-001). Validates data elements defined in hypertension_measure 1.json against the patient JSON document structure in sample_json_data.json.",
+
+  "index_settings": {
+    "index": "patients",
+    "mappings": {
+      "properties": {
+        "patient.demographics.age": { "type": "integer" },
+        "patient.demographics.dob": { "type": "date" },
+        "patient.chronic_conditions": {
+          "type": "nested",
+          "properties": {
+            "icd_code": { "type": "keyword" },
+            "status": { "type": "keyword" },
+            "last_seen_date": { "type": "date" }
+          }
+        },
+        "patient.encounters": {
+          "type": "nested",
+          "properties": {
+            "id": { "type": "keyword" },
+            "source_system": { "type": "keyword" },
+            "diagnoses": {
+              "type": "nested",
+              "properties": {
+                "icd_code": { "type": "keyword" },
+                "status": { "type": "keyword" },
+                "onset_date": { "type": "date" }
+              }
+            },
+            "procedures": {
+              "type": "nested",
+              "properties": {
+                "procedure_code": { "type": "keyword" },
+                "procedure_date": { "type": "date" }
+              }
+            }
+          }
+        },
+        "patient.hedis_measures": {
+          "type": "nested",
+          "properties": {
+            "measure_name": { "type": "keyword" },
+            "status": { "type": "keyword" },
+            "gap_open": { "type": "boolean" },
+            "last_screening_date": { "type": "date" }
+          }
+        }
+      }
+    }
+  },
+
+  "queries": {
+
+    "de_1_age_between_18_85": {
+      "_comment": "Data Element de-1781178177381 — Age between 18 and 85. JSON path: patient.demographics.age",
+      "query": {
+        "range": {
+          "patient.demographics.age": {
+            "gte": 18,
+            "lte": 85
+          }
+        }
+      },
+      "json_path": "patient.demographics.age",
+      "replaces_table": "patient",
+      "replaces_field": "patient_age"
+    },
+
+    "de_2_hypertension_icd_code": {
+      "_comment": "Data Element de-1781178461754 — ICD-10 hypertension diagnosis codes. Searches both patient.encounters[].diagnoses[].icd_code and patient.chronic_conditions[].icd_code",
+      "query": {
+        "bool": {
+          "should": [
+            {
+              "nested": {
+                "path": "patient.encounters",
+                "query": {
+                  "nested": {
+                    "path": "patient.encounters.diagnoses",
+                    "query": {
+                      "terms": {
+                        "patient.encounters.diagnoses.icd_code": [
+                          "I10","I11.0","I11.9","I12.0","I12.9",
+                          "I13.0","I13.10","I13.11","I13.2","I13.9",
+                          "I15.0","I15.1","I15.2","I15.8","I15.9",
+                          "I16.0","I16.1","I16.9"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "nested": {
+                "path": "patient.chronic_conditions",
+                "query": {
+                  "terms": {
+                    "patient.chronic_conditions.icd_code": [
+                      "I10","I11.0","I11.9","I12.0","I12.9",
+                      "I13.0","I13.10","I13.11","I13.2","I13.9",
+                      "I15.0","I15.1","I15.2","I15.8","I15.9",
+                      "I16.0","I16.1","I16.9"
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "minimum_should_match": 1
+        }
+      },
+      "json_path": "patient.chronic_conditions[].icd_code OR patient.encounters[].diagnoses[].icd_code",
+      "replaces_table": "mra1_encounter_icd_codes",
+      "replaces_field": "problem_code"
+    },
+
+    "de_3_bp_measurement_cpt_present": {
+      "_comment": "Data Element de-1781178618255 — BP measurement CPT codes 3077F or 3080F MUST be present (valueMode=latest). JSON path: patient.encounters[].procedures[].procedure_code. NOTE: No procedure data exists in sample_json_data.json — this check will currently return no matches.",
+      "query": {
+        "nested": {
+          "path": "patient.encounters",
+          "query": {
+            "nested": {
+              "path": "patient.encounters.procedures",
+              "query": {
+                "terms": {
+                  "patient.encounters.procedures.procedure_code": [
+                    "3077F",
+                    "3080F"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "json_path": "patient.encounters[].procedures[].procedure_code",
+      "replaces_table": "mra1_encounter_bill_cpts",
+      "replaces_field": "procedure_code",
+      "data_gap": "No procedure records exist in sample_json_data.json — encounters[].procedures is null for all records"
+    },
+
+    "de_4_bp_exclusion_cpt_absent": {
+      "_comment": "Data Element de-1781178801758 — Exclusion CPT codes must NOT be present (not_contains operator). Patient passes this rule if NONE of the exclusion codes appear in procedures.",
+      "query": {
+        "bool": {
+          "must_not": [
+            {
+              "nested": {
+                "path": "patient.encounters",
+                "query": {
+                  "nested": {
+                    "path": "patient.encounters.procedures",
+                    "query": {
+                      "terms": {
+                        "patient.encounters.procedures.procedure_code": [
+                          "G8950","G8952","G8783","G9745","M1278","M1279"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "json_path": "patient.encounters[].procedures[].procedure_code",
+      "replaces_table": "mra1_encounter_bill_cpts",
+      "replaces_field": "procedure_code"
+    },
+
+    "full_measure_combined": {
+      "_comment": "Combined query: patient must satisfy ALL four data elements to be flagged as matching the hypertension measure PC-001. de-3 is currently ungated due to missing procedure data.",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "patient.demographics.age": { "gte": 18, "lte": 85 }
+              }
+            },
+            {
+              "bool": {
+                "should": [
+                  {
+                    "nested": {
+                      "path": "patient.encounters",
+                      "query": {
+                        "nested": {
+                          "path": "patient.encounters.diagnoses",
+                          "query": {
+                            "terms": {
+                              "patient.encounters.diagnoses.icd_code": [
+                                "I10","I11.0","I11.9","I12.0","I12.9",
+                                "I13.0","I13.10","I13.11","I13.2","I13.9",
+                                "I15.0","I15.1","I15.2","I15.8","I15.9",
+                                "I16.0","I16.1","I16.9"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "nested": {
+                      "path": "patient.chronic_conditions",
+                      "query": {
+                        "terms": {
+                          "patient.chronic_conditions.icd_code": [
+                            "I10","I11.0","I11.9","I12.0","I12.9",
+                            "I13.0","I13.10","I13.11","I13.2","I13.9",
+                            "I15.0","I15.1","I15.2","I15.8","I15.9",
+                            "I16.0","I16.1","I16.9"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "minimum_should_match": 1
+              }
+            },
+            {
+              "bool": {
+                "must_not": [
+                  {
+                    "nested": {
+                      "path": "patient.encounters",
+                      "query": {
+                        "nested": {
+                          "path": "patient.encounters.procedures",
+                          "query": {
+                            "terms": {
+                              "patient.encounters.procedures.procedure_code": [
+                                "G8950","G8952","G8783","G9745","M1278","M1279"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+
+    "validation_hedis_gap_check": {
+      "_comment": "Cross-validation: confirm the patient already has a 'Controlling High BP' HEDIS gap open — this corroborates the measure logic.",
+      "query": {
+        "nested": {
+          "path": "patient.hedis_measures",
+          "query": {
+            "bool": {
+              "must": [
+                { "term": { "patient.hedis_measures.measure_name": "Controlling High BP" } },
+                { "term": { "patient.hedis_measures.gap_open": true } }
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "ingest_pipeline": {
+    "id": "hypertension_measure_pc001",
+    "description": "Enrichment pipeline for PC-001 Hypertension Management measure evaluation",
+    "processors": [
+      {
+        "script": {
+          "description": "Compute age from DOB if demographics.age is missing",
+          "lang": "painless",
+          "source": "if (ctx.patient?.demographics?.age == null && ctx.patient?.demographics?.dob != null) { def dob = LocalDate.parse(ctx.patient.demographics.dob); def today = LocalDate.now(); ctx.patient.demographics.age = (int) ChronoUnit.YEARS.between(dob, today); }"
+        }
+      },
+      {
+        "script": {
+          "description": "Flag patient as hypertension measure candidate based on de-1, de-2, de-4",
+          "lang": "painless",
+          "source": "
+            def hyp_codes = new HashSet(['I10','I11.0','I11.9','I12.0','I12.9','I13.0','I13.10','I13.11','I13.2','I13.9','I15.0','I15.1','I15.2','I15.8','I15.9','I16.0','I16.1','I16.9']);
+            def excl_codes = new HashSet(['G8950','G8952','G8783','G9745','M1278','M1279']);
+
+            int age = ctx.patient?.demographics?.age ?: 0;
+            boolean age_ok = age >= 18 && age <= 85;
+
+            boolean has_hyp_diag = false;
+            if (ctx.patient?.chronic_conditions != null) {
+              for (def cc : ctx.patient.chronic_conditions) {
+                if (hyp_codes.contains(cc.icd_code)) { has_hyp_diag = true; break; }
+              }
+            }
+            if (!has_hyp_diag && ctx.patient?.encounters != null) {
+              outer: for (def enc : ctx.patient.encounters) {
+                if (enc.diagnoses != null) {
+                  for (def d : enc.diagnoses) {
+                    if (hyp_codes.contains(d.icd_code)) { has_hyp_diag = true; break outer; }
+                  }
+                }
+              }
+            }
+
+            boolean has_excl_proc = false;
+            if (ctx.patient?.encounters != null) {
+              outer: for (def enc : ctx.patient.encounters) {
+                if (enc.procedures != null) {
+                  for (def p : enc.procedures) {
+                    if (excl_codes.contains(p.procedure_code)) { has_excl_proc = true; break outer; }
+                  }
+                }
+              }
+            }
+
+            ctx.measure_flags = ctx.measure_flags ?: [:];
+            ctx.measure_flags.pc001_age_eligible = age_ok;
+            ctx.measure_flags.pc001_has_hypertension_dx = has_hyp_diag;
+            ctx.measure_flags.pc001_has_exclusion_proc = has_excl_proc;
+            ctx.measure_flags.pc001_bp_measurement_present = false;
+            ctx.measure_flags.pc001_candidate = age_ok && has_hyp_diag && !has_excl_proc;
+          "
+        }
+      }
+    ]
+  }
+}
