@@ -91,6 +91,7 @@ sp_get_patient_es_doc: BEGIN
       -- ─ care_team — sourced from dc_bene_alignment_rostr_m01 (latest row) ──
       'care_team', (
         SELECT JSON_OBJECT(
+          'id',                  CONCAT(p_origid, '_care_team'),
           'market_id',           r.market_id,
           'market_name',         r.market_names,
           'group_name',          r.dce_group_name,
@@ -435,6 +436,7 @@ sp_get_patient_es_doc: BEGIN
 
       -- ─ uamcc{} ───────────────────────────────────────────────────────────
       'uamcc', JSON_OBJECT(
+        'id',      CONCAT(p_origid, '_uamcc_', YEAR(CURDATE())),
         'summary', (
           SELECT JSON_OBJECT(
             'id',              CONCAT(p_origid, '_', YEAR(CURDATE())),
@@ -997,7 +999,9 @@ sp_get_patient_es_doc: BEGIN
             'prescribed_doctor',  dm.prescribed_doctor,
             'source',             COALESCE(dm.source, 'DrFirst'),
             'delete_status',      dm.delete_status,
-            'reconciled_status',  dm.reconciled_status
+            'reconciled_status',  dm.reconciled_status,
+            'risk_indicator',     dm.risk_indicator,
+            'duration',           dm.duration
           ) AS obj
           FROM drfirst_patient_medications dm
           WHERE dm.patientid = p_origid
@@ -1017,7 +1021,8 @@ sp_get_patient_es_doc: BEGIN
             'acuity',         mas.acuity,
             'score',          mas.score,
             'completed_by',   mas.completed_by,
-            'notes',          mas.notes
+            'notes',          mas.notes,
+            'created_date',   DATE_FORMAT(mas.created_date, '%Y-%m-%d')
           ) AS obj
           FROM mra_assessments_and_screenings mas
           WHERE mas.origid = p_origid COLLATE utf8mb4_unicode_ci
@@ -1051,6 +1056,7 @@ sp_get_patient_es_doc: BEGIN
                                  ELSE 'Unknown' END,
             'open',            IF(msa.resolved_date IS NULL,
                                    CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+            'original_status', CAST(msa.original_status AS CHAR),
             'version_no',      msa.version_no
           ) AS obj
           FROM mra_scorecard_alerts msa
@@ -1061,6 +1067,7 @@ sp_get_patient_es_doc: BEGIN
 
       -- ─ sdoh{} ────────────────────────────────────────────────────────────
       'sdoh', JSON_OBJECT(
+        'id',                    CONCAT(p_origid, '_sdoh'),
         'food_insecurity_flag', (
           SELECT IF(COUNT(*) > 0, CAST(TRUE AS JSON), CAST(FALSE AS JSON))
           FROM encounter_risk_assesments era
@@ -1090,7 +1097,11 @@ sp_get_patient_es_doc: BEGIN
               'created_date',       DATE_FORMAT(smp.created_date, '%Y-%m-%d'),
               'ship_frequency_id',  smp.ship_frequency_id,
               'assigned_cm',        smp.assigned_cm,
-              'source',             smp.source
+              'source',             smp.source,
+              'notes',              smp.notes,
+              'created_by',         smp.created_by,
+              'updated_by',         smp.updated_by,
+              'updated_date',       DATE_FORMAT(smp.updated_date, '%Y-%m-%d')
             ) AS obj
             FROM sdoh_meal_plan smp
             WHERE smp.origid = p_origid
@@ -1112,12 +1123,40 @@ sp_get_patient_es_doc: BEGIN
               'gift_card_received', IF(cdrp.gift_card_received = 'yes',
                                         CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
               'address_verified',   IF(cdrp.address_verified = 'yes',
-                                        CAST(TRUE AS JSON), CAST(FALSE AS JSON))
+                                        CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+              'associate_name',         cdrp.associate_name,
+              'gift_card_to_be_issued', cdrp.gift_card_to_be_issued
             ) AS obj
             FROM chronic_disease_reward_program cdrp
             WHERE cdrp.origid = p_origid
             ORDER BY cdrp.date DESC
           ) _rewards
+        ),
+
+        'transport_benefits', (
+          SELECT JSON_ARRAYAGG(obj)
+          FROM (
+            SELECT JSON_OBJECT(
+              'id',                     tb.nr,
+              'encounter_nr',           tb.encounter_nr,
+              'date',                   DATE_FORMAT(tb.date, '%Y-%m-%d'),
+              'mode',                   tb.mode,
+              'eligible_rides',         tb.eligible_rides,
+              'ride_booked_by',         tb.ride_booked_by,
+              'cost_of_the_ride',       tb.cost_of_the_ride,
+              'transportation_company', tb.transportation_company,
+              'pickup_address',         tb.pickup_address,
+              'dropoff_address',        tb.dropoff_address,
+              'notes',                  tb.notes,
+              'facility_name',          tb.facility_name,
+              'facility_sub_name',      tb.facility_sub_name,
+              'dce_provider_name',      tb.dce_provider_name,
+              'member_type',            tb.member_type
+            ) AS obj
+            FROM transportation_benefit tb
+            WHERE tb.orig_id = p_origid
+            ORDER BY tb.date DESC
+          ) _transport
         )
       ),
 

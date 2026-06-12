@@ -269,6 +269,9 @@ def main():
 
     if do_validate_sp:
         validate_sp()
+        # Stop here if the only goal was to compile the SP
+        if not (do_validate_doc or raw or section or save):
+            return
 
     cfg = _db_config()
     print(f"Connecting to {cfg['host']} / {cfg['database']} …")
