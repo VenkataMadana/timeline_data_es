@@ -15,7 +15,8 @@
 --   • CDC strategy: ES ReplaceOne on {patient.id} = p_origid
 --
 -- Source tables (mradb_prod):
---   adt_patient, adt_encounter, adt_encounter_icd_codes, adt_encounter_procedure,
+--   adt_patient, adt_encounter, mra1_encounter (UNION ALL for encounter spine),
+--   adt_encounter_icd_codes, adt_encounter_procedure,
 --   mra1_encounter_bill_cpts, mra_hcc_coefficients, mra_raf_patient,
 --   mra_uamcc_details, mra_scorecard_alerts, drfirst_patient_medications,
 --   encounter_risk_assesments, in_home_patient_program, mra_chart_queue,
@@ -23,6 +24,13 @@
 --   chronic_disease_reward_program, care_plan, care_plan_patient,
 --   mra_assessments_and_screenings, cpoe_result, cpoe_result_values,
 --   flowsheet_rows, adt_appointment, qip_uamcc_lambda
+--
+-- Encounter spine strategy:
+--   adt_encounter  → source_system = 'adt'  (ADT/EMR events; full clinical detail)
+--   mra1_encounter → source_system = 'mra1' (CCLF claim events; all enc_proc_type values)
+--   UNION ALL keyed on encounter_nr — each row carries its source_system tag.
+--   CCLF-specific claim fields (alignedStatus, TFU flags, ACR, UAMCC, etc.) are
+--   embedded in a nested cclf{} object so ADT rows carry NULL there cleanly.
 -- =============================================================================
 
 DROP PROCEDURE IF EXISTS `sp_get_patient_es_doc`;
@@ -515,165 +523,421 @@ sp_get_patient_es_doc: BEGIN
         ORDER BY msa.added_date DESC
       ),
 
-      -- ─ encounters[] — SPINE ──────────────────────────────────────────────
+      -- ─ encounters[] — SPINE (UNION ALL: adt_encounter + mra1_encounter) ────
+      --
+      -- Both source tables contribute rows keyed on encounter_nr.
+      -- adt_encounter  → source_system = 'adt'  (ADT/EMR events; full clinical)
+      -- mra1_encounter → source_system = 'mra1' (CCLF claims; all enc_proc_type)
+      --
+      -- Common fields (dates, facility, provider, diagnoses, procedures, meds)
+      -- are populated from whichever source has the row.  CCLF-specific claim
+      -- analytics (TFU flags, ACR, UAMCC numerators, alignment status, etc.) are
+      -- nested under cclf{} so ADT-only rows carry null there cleanly.
+      --
+      -- enc_proc_type on mra1_encounter maps to encounters[].setting:
+      --   Acute Hospital | Emergency | HHA | Hospice | Long Term Care Hospital |
+      --   Observation | Part B | Part C | Part D | Part DME | Psychiatric |
+      --   Rehabilitation | SNF
       'encounters', (
-        SELECT JSON_ARRAYAGG(enc_obj)
+        SELECT JSON_ARRAYAGG(enc_obj ORDER BY enc_date DESC)
         FROM (
-          SELECT ae.encounter_date AS enc_date,
-          JSON_OBJECT(
-            'id',              ae.encounter_nr,
-            'encounter_nr',    ae.encounter_nr,
-            'encounter_type',  ae.mos_type,
-            'enc_class_nr',    ae.encounter_class_nr,
-            'encounter_status',ae.encounter_status,
 
-            'dates', JSON_OBJECT(
-              'admission_date',      DATE_FORMAT(ae.encounter_date, '%Y-%m-%d'),
-              'discharge_date',      DATE_FORMAT(ae.discharge_date, '%Y-%m-%d'),
-              'length_of_stay_days', DATEDIFF(COALESCE(ae.discharge_date, CURDATE()),
-                                              ae.encounter_date),
-              'next_pcp_visit',      DATE_FORMAT(ae.next_pcp_visit_date, '%Y-%m-%d'),
-              'hcc_followup_date',   DATE_FORMAT(ae.hcc_followup, '%Y-%m-%d'),
-              'cm_followup_date',    DATE_FORMAT(ae.cm_followup, '%Y-%m-%d'),
-              'tcm_7day_deadline',   DATE_FORMAT(DATE_ADD(ae.discharge_date, INTERVAL 7 DAY), '%Y-%m-%d'),
-              'tcm_14day_deadline',  DATE_FORMAT(DATE_ADD(ae.discharge_date, INTERVAL 14 DAY), '%Y-%m-%d')
-            ),
+          -- ── Branch A: ADT / EMR encounters ─────────────────────────────────
+          SELECT
+            ae.encounter_date          AS enc_date,
+            ae.encounter_nr            AS enc_nr,
+            JSON_OBJECT(
+              'id',               ae.encounter_nr,
+              'encounter_nr',     ae.encounter_nr,
+              'source_system',    'adt',
+              'encounter_type',   ae.mos_type,
+              'enc_class_nr',     ae.encounter_class_nr,
+              'encounter_status', ae.encounter_status,
+              'setting',          ae.mos_type,
 
-            'facility', JSON_OBJECT(
-              'name',        ae.hospital_name,
-              'npi',         ae.hospital_npi,
-              'taxonomy',    ae.hos_taxonomy01,
-              'hospital_nr', ae.hospital_nr,
-              'oscar_num',   ae.PRVDR_OSCAR_NUM
-            ),
+              'dates', JSON_OBJECT(
+                'admission_date',      DATE_FORMAT(ae.encounter_date, '%Y-%m-%d'),
+                'discharge_date',      DATE_FORMAT(ae.discharge_date, '%Y-%m-%d'),
+                'length_of_stay_days', DATEDIFF(COALESCE(ae.discharge_date, CURDATE()),
+                                                ae.encounter_date),
+                'next_pcp_visit',      DATE_FORMAT(ae.next_pcp_visit_date, '%Y-%m-%d'),
+                'hcc_followup_date',   DATE_FORMAT(ae.hcc_followup, '%Y-%m-%d'),
+                'cm_followup_date',    DATE_FORMAT(ae.cm_followup, '%Y-%m-%d'),
+                'tcm_7day_deadline',   DATE_FORMAT(DATE_ADD(ae.discharge_date, INTERVAL 7 DAY), '%Y-%m-%d'),
+                'tcm_14day_deadline',  DATE_FORMAT(DATE_ADD(ae.discharge_date, INTERVAL 14 DAY), '%Y-%m-%d')
+              ),
 
-            'provider', JSON_OBJECT(
-              'attending_name',     ae.dce_provider_name,
-              'attending_npi',      ae.ATNDG_PRVDR_NPI_NUM,
-              'attending_taxonomy', ae.taxonomy
-            ),
+              'facility', JSON_OBJECT(
+                'name',        ae.hospital_name,
+                'npi',         ae.hospital_npi,
+                'taxonomy',    ae.hos_taxonomy01,
+                'hospital_nr', ae.hospital_nr,
+                'oscar_num',   ae.PRVDR_OSCAR_NUM
+              ),
 
-            'admission', JSON_OBJECT(
-              'point_of_origin',    ae.mh_admission_source,
-              'purpose',            ae.referrer_diagnosis,
-              'admit_type_cd',      ae.mh_patient_class,
-              'confirmed_mra',      IF(ae.appt_confirmed_mra IS NOT NULL,
-                                       CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-              'high_utilizer',      IF(ae.high_utilizer = 1,
-                                       CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-              'referrer_diagnosis', ae.referrer_diagnosis
-            ),
+              'provider', JSON_OBJECT(
+                'attending_name',     ae.dce_provider_name,
+                'attending_npi',      ae.ATNDG_PRVDR_NPI_NUM,
+                'attending_taxonomy', ae.taxonomy
+              ),
 
-            'discharge', JSON_OBJECT(
-              'disposition',       ae.m_discharge_to,
-              'discharge_to_code', ae.BENE_PTNT_STUS_CD,
-              'readmit_30d',       IF(ae.m_redmit_flag = 1,
-                                      CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-              'readmit_er_30d',    IF(ae.readmit_er_status = 1,
-                                      CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-              'readmit_rate_pct',  ae.readmit_rate_percentile,
-              'tfu_enabled',       IF(ae.tfu_enabled = 1,
-                                      CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-              'followup_days',     ae.followup_days,
-              'acr_numerator',     ae.acr_numerator,
-              'tcm_numerator',     ae.tcm_num,
-              'tcm_completed',     IF(ae.tcm_num = 1,
-                                      CAST(TRUE AS JSON), CAST(FALSE AS JSON))
-            ),
-
-            'claim', JSON_OBJECT(
-              'clm_uniq_id',       ae.CUR_CLM_UNIQ_ID,
-              'clm_efctv_dt',      DATE_FORMAT(ae.CLM_EFCTV_DT, '%Y-%m-%d'),
-              'rndrg_prvdr_npi',   ae.ATNDG_PRVDR_NPI_NUM,
-              'patient_status_cd', ae.BENE_PTNT_STUS_CD,
-              'prvdr_spclty_cd',   ae.CLM_PRVDR_SPCLTY_CD
-            ),
-
-            -- diagnoses embedded in encounter
-            'diagnoses', (
-              SELECT JSON_ARRAYAGG(obj)
-              FROM (
-                SELECT JSON_OBJECT(
-                  'id',               aic.id,
-                  'icd_code',         aic.diagnosis_code,
-                  'icd_desc',         aic.diagnosis_desc,
-                  'onset_date',       DATE_FORMAT(aic.onset_date, '%Y-%m-%d'),
-                  'problem_type',     aic.problem_type,
-                  'icd_order',        aic.icd_order,
-                  'status',           COALESCE(aic.status, 'Active'),
-                  'hcc_number',       hcd.hcc,
-                  'hcc_score',        hcd.community_nondual_aged,
-                  'hcc_included',     IF(hcd.hcc IS NOT NULL,
+              'admission', JSON_OBJECT(
+                'point_of_origin',    ae.mh_admission_source,
+                'purpose',            ae.referrer_diagnosis,
+                'admit_type_cd',      ae.mh_patient_class,
+                'confirmed_mra',      IF(ae.appt_confirmed_mra IS NOT NULL,
                                          CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-                  'is_comorbid',      IF(aic.is_comorbid = 1,
+                'high_utilizer',      IF(ae.high_utilizer = 1,
                                          CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-                  'agreement_status', 'Agree',
-                  'source',           COALESCE(aic.source, ae.mos_type)
-                ) AS obj
-                FROM adt_encounter_icd_codes aic
-                LEFT JOIN mra_hcc_coefficients hcd
-                  ON hcd.diagnosis_code = aic.diagnosis_code
-                 AND hcd.active_date <= NOW() AND hcd.inactive_date >= NOW()
-                WHERE aic.encounter_nr = ae.encounter_nr
-                ORDER BY aic.icd_order
-              ) _diag
-            ),
+                'referrer_diagnosis', ae.referrer_diagnosis
+              ),
 
-            -- billing CPT procedures embedded in encounter
-            'procedures', (
-              SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'id',             CONCAT(cpt.bb_Code, '_', DATE_FORMAT(ae.encounter_date, '%Y-%m-%d')),
-                  'billing_code',   cpt.bb_Code,
-                  'cpt_modifier',   cpt.bb_modifier,
-                  'procedure_date', DATE_FORMAT(ae.encounter_date, '%Y-%m-%d'),
-                  'revenue_code',   cpt.CLM_LINE_PROD_REV_CTR_CD
+              'discharge', JSON_OBJECT(
+                'disposition',       ae.m_discharge_to,
+                'discharge_to_code', ae.BENE_PTNT_STUS_CD,
+                'readmit_30d',       IF(ae.m_redmit_flag = 1,
+                                        CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'readmit_er_30d',    IF(ae.readmit_er_status = 1,
+                                        CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'readmit_rate_pct',  ae.readmit_rate_percentile,
+                'tfu_enabled',       IF(ae.tfu_enabled = 1,
+                                        CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'followup_days',     ae.followup_days,
+                'acr_numerator',     ae.acr_numerator,
+                'tcm_numerator',     ae.tcm_num,
+                'tcm_completed',     IF(ae.tcm_num = 1,
+                                        CAST(TRUE AS JSON), CAST(FALSE AS JSON))
+              ),
+
+              'claim', JSON_OBJECT(
+                'clm_uniq_id',       ae.CUR_CLM_UNIQ_ID,
+                'clm_efctv_dt',      DATE_FORMAT(ae.CLM_EFCTV_DT, '%Y-%m-%d'),
+                'rndrg_prvdr_npi',   ae.ATNDG_PRVDR_NPI_NUM,
+                'patient_status_cd', ae.BENE_PTNT_STUS_CD,
+                'prvdr_spclty_cd',   ae.CLM_PRVDR_SPCLTY_CD
+              ),
+
+              -- cclf{} is null for ADT rows — CCLF fields only on mra1 branch
+              'cclf', NULL,
+
+              -- diagnoses embedded in encounter
+              'diagnoses', (
+                SELECT JSON_ARRAYAGG(obj)
+                FROM (
+                  SELECT JSON_OBJECT(
+                    'id',               aic.id,
+                    'icd_code',         aic.diagnosis_code,
+                    'icd_desc',         aic.diagnosis_desc,
+                    'onset_date',       DATE_FORMAT(aic.onset_date, '%Y-%m-%d'),
+                    'problem_type',     aic.problem_type,
+                    'icd_order',        aic.icd_order,
+                    'status',           COALESCE(aic.status, 'Active'),
+                    'hcc_number',       hcd.hcc,
+                    'hcc_score',        hcd.community_nondual_aged,
+                    'hcc_included',     IF(hcd.hcc IS NOT NULL,
+                                           CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                    'is_comorbid',      IF(aic.is_comorbid = 1,
+                                           CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                    'agreement_status', 'Agree',
+                    'source',           COALESCE(aic.source, ae.mos_type)
+                  ) AS obj
+                  FROM adt_encounter_icd_codes aic
+                  LEFT JOIN mra_hcc_coefficients hcd
+                    ON hcd.diagnosis_code = aic.diagnosis_code
+                   AND hcd.active_date <= NOW() AND hcd.inactive_date >= NOW()
+                  WHERE aic.encounter_nr = ae.encounter_nr
+                  ORDER BY aic.icd_order
+                ) _diag
+              ),
+
+              -- billing CPT procedures embedded in encounter
+              'procedures', (
+                SELECT JSON_ARRAYAGG(
+                  JSON_OBJECT(
+                    'id',             CONCAT(cpt.bb_Code, '_', DATE_FORMAT(ae.encounter_date, '%Y-%m-%d')),
+                    'billing_code',   cpt.bb_Code,
+                    'cpt_modifier',   cpt.bb_modifier,
+                    'procedure_date', DATE_FORMAT(ae.encounter_date, '%Y-%m-%d'),
+                    'revenue_code',   cpt.CLM_LINE_PROD_REV_CTR_CD
+                  )
                 )
-              )
-              FROM mra1_encounter_bill_cpts cpt
-              WHERE cpt.encounter_nr = ae.encounter_nr
-            ),
+                FROM mra1_encounter_bill_cpts cpt
+                WHERE cpt.encounter_nr = ae.encounter_nr
+              ),
 
-            -- encounter medications (admission meds)
-            'enc_medications', (
-              SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'id',               dm.id,
-                  'ndc_id',           dm.NDCID,
-                  'rxnorm_id',        dm.RxnormID,
-                  'medication_name',  dm.medications,
-                  'dose',             dm.dose,
-                  'dose_unit',        dm.dose_unit,
-                  'route',            dm.rout,
-                  'schedule',         dm.schedule,
-                  'start_date',       DATE_FORMAT(dm.start_date, '%Y-%m-%d'),
-                  'stop_date',        DATE_FORMAT(dm.stop_date, '%Y-%m-%d'),
-                  'prescribed_doctor',dm.prescribed_doctor,
-                  'delete_status',    dm.delete_status
+              -- encounter medications (admission meds)
+              'enc_medications', (
+                SELECT JSON_ARRAYAGG(
+                  JSON_OBJECT(
+                    'id',               dm.id,
+                    'ndc_id',           dm.NDCID,
+                    'rxnorm_id',        dm.RxnormID,
+                    'medication_name',  dm.medications,
+                    'dose',             dm.dose,
+                    'dose_unit',        dm.dose_unit,
+                    'route',            dm.rout,
+                    'schedule',         dm.schedule,
+                    'start_date',       DATE_FORMAT(dm.start_date, '%Y-%m-%d'),
+                    'stop_date',        DATE_FORMAT(dm.stop_date, '%Y-%m-%d'),
+                    'prescribed_doctor',dm.prescribed_doctor,
+                    'delete_status',    dm.delete_status
+                  )
                 )
-              )
-              FROM drfirst_patient_medications dm
-              WHERE dm.patientid = p_origid
-                AND dm.admission = 'yes'
-                AND DATE(dm.start_date) = DATE(ae.encounter_date)
-            ),
+                FROM drfirst_patient_medications dm
+                WHERE dm.patientid = p_origid
+                  AND dm.admission = 'yes'
+                  AND DATE(dm.start_date) = DATE(ae.encounter_date)
+              ),
 
-            -- audit fields
-            'audit', JSON_OBJECT(
-              'care_status',   ae.care_status,
-              'audit_status',  ae.audit_status,
-              'mos',           ae.mos,
-              'mos_type',      ae.mos_type,
-              'tfu_numerator', ae.tfu_numerator,
-              'mif_exclusion', IF(ae.mif_exclusion = 1,
-                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-              'census_status', ae.census_status
-            )
-          ) AS enc_obj
+              -- audit fields
+              'audit', JSON_OBJECT(
+                'care_status',   ae.care_status,
+                'audit_status',  ae.audit_status,
+                'mos',           ae.mos,
+                'mos_type',      ae.mos_type,
+                'tfu_numerator', ae.tfu_numerator,
+                'mif_exclusion', IF(ae.mif_exclusion = 1,
+                                     CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'census_status', ae.census_status
+              )
+            ) AS enc_obj
 
           FROM adt_encounter ae
           WHERE ae.origid = p_origid
-          ORDER BY ae.encounter_date DESC
+
+          UNION ALL
+
+          -- ── Branch B: CCLF / mra1_encounter (all enc_proc_type values) ─────
+          -- All 12 enc_proc_type settings are captured by removing the WHERE
+          -- filter and tagging source_system = 'mra1'.  CCLF-specific analytics
+          -- live in cclf{} so they are available for TFU/ACR/UAMCC rule queries
+          -- without polluting the shared encounter fields.
+          SELECT
+            me.enc_admit_date          AS enc_date,
+            me.encounter_nr            AS enc_nr,
+            JSON_OBJECT(
+              'id',               me.encounter_nr,
+              'encounter_nr',     me.encounter_nr,
+              'source_system',    'mra1',
+              'encounter_type',   me.enc_proc_type,
+              'enc_class_nr',     NULL,
+              'encounter_status', NULL,
+              'setting',          me.enc_proc_type,
+
+              'dates', JSON_OBJECT(
+                'admission_date',      DATE_FORMAT(me.enc_admit_date, '%Y-%m-%d'),
+                'discharge_date',      DATE_FORMAT(me.enc_disch_date, '%Y-%m-%d'),
+                'length_of_stay_days', DATEDIFF(COALESCE(me.enc_disch_date, CURDATE()),
+                                                me.enc_admit_date),
+                'next_pcp_visit',      NULL,
+                'hcc_followup_date',   NULL,
+                'cm_followup_date',    NULL,
+                'tcm_7day_deadline',   DATE_FORMAT(DATE_ADD(me.enc_disch_date, INTERVAL 7 DAY), '%Y-%m-%d'),
+                'tcm_14day_deadline',  DATE_FORMAT(DATE_ADD(me.enc_disch_date, INTERVAL 14 DAY), '%Y-%m-%d')
+              ),
+
+              'facility', JSON_OBJECT(
+                'name',        me.hospital_name,
+                'npi',         NULL,
+                'taxonomy',    me.hos_taxonomy01,
+                'hospital_nr', me.hospital_nr,
+                'oscar_num',   NULL
+              ),
+
+              'provider', JSON_OBJECT(
+                'attending_name',     me.m_provider_name,
+                'attending_npi',      me.m_provider_npi,
+                'attending_taxonomy', me.m_prov_spclty_txt
+              ),
+
+              'admission', JSON_OBJECT(
+                'point_of_origin',    NULL,
+                'purpose',            NULL,
+                'admit_type_cd',      NULL,
+                'confirmed_mra',      CAST(FALSE AS JSON),
+                'high_utilizer',      CAST(FALSE AS JSON),
+                'referrer_diagnosis', NULL
+              ),
+
+              'discharge', JSON_OBJECT(
+                'disposition',       me.e_discharge_text,
+                'discharge_to_code', me.e_discharge_type,
+                'readmit_30d',       IF(me.is_readmit = 1,
+                                        CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'readmit_er_30d',    CAST(FALSE AS JSON),
+                'readmit_rate_pct',  NULL,
+                'tfu_enabled',       IF(me.m_flwup_flag = 1,
+                                        CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'followup_days',     NULL,
+                'acr_numerator',     me.acr_numer,
+                'tcm_numerator',     me.tfu_numer,
+                'tcm_completed',     IF(me.tfu_numer = 1,
+                                        CAST(TRUE AS JSON), CAST(FALSE AS JSON))
+              ),
+
+              'claim', JSON_OBJECT(
+                'clm_uniq_id',       NULL,
+                'clm_efctv_dt',      NULL,
+                'rndrg_prvdr_npi',   me.m_provider_npi,
+                'patient_status_cd', NULL,
+                'prvdr_spclty_cd',   me.m_prov_spclty_txt
+              ),
+
+              -- cclf{} holds all CCLF-specific analytics fields from mra1_encounter
+              'cclf', JSON_OBJECT(
+                'admitTime',                    me.enc_admit_time,
+                'dischargeTime',                me.enc_disch_time,
+                'groupType',                    me.dce_group_type,
+                'subGroupType',                 me.dce_sub_group_type,
+                'marketId',                     me.market_nr,
+                'marketName',                   me.market_name,
+                'facilityId',                   me.pt_facility_nr,
+                'facilitySubId',                me.pt_facility_sub_nr,
+                'providerId',                   me.pt_provider_num,
+                'facilityName',                 me.pt_facility_name,
+                'facilitySubName',              me.pt_facility_sub_name,
+                'primaryPhysician',             me.pt_sp_dr_1,
+                'alignedStatus',                me.pt_aligned_status,
+                'secondaryAlignedStatus',       me.pt_aligned2status,
+                'mh1CalculatedAmount',          me.mh1_cal_amount,
+                'mc1CalculatedAmount',          me.mc1_cal_amount,
+                'isReferenceAdmitDate',         IF(me.is_enc_ref_admitdate = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isReadmission',                IF(me.is_readmit = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isC2Readmission',              IF(me.is_c2_readmit = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isTransferredEncounter',       IF(me.is_enc_transfer = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isSnfRecord',                  IF(me.is_snf_rec = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isSnfAdmitDateReference',      IF(me.is_snf_admitdate_ref = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isEmergencyRoomVisit',         IF(me.is_er_visit = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isPrimaryCareVisit',           IF(me.is_visit_pcp = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isOfficeVisitRecord',          IF(me.is_offvisit_rec = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isOfficeVisitSecondaryRecord', IF(me.is_offvisit2rec = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'followUpFlag',                 IF(me.m_flwup_flag = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'is72HourFollowUp',             IF(me.is_72_hr_flwup = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'is7DayFollowUp',               IF(me.is_flwup_7_days = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'is14DayFollowUp',              IF(me.is_flwup_14_days = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isGlobal14DayFollowUp',        IF(me.is_gflwup_14_days = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'followUp72HourDate',           DATE_FORMAT(me.m72hr_flwup_date, '%Y-%m-%d'),
+                'emergencyRoomFollowUp',        IF(me.tfu_pb_er = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'observationFollowUp',          IF(me.tfu_pb_obs = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'isBcdaMatch',                  IF(me.is_bcda_match = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'calculatedBedDays',            me.m_cal_bed_days,
+                'placeOfService',               me.m_pos_txt,
+                'providerSpecialty',            me.m_prov_spclty_txt,
+                'followUpDate',                 DATE_FORMAT(me.tfu_followup_date, '%Y-%m-%d'),
+                'tfuDenominator',               IF(me.tfu_denom = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'tfuNumerator',                 IF(me.tfu_numer = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'acrNumerator',                 IF(me.acr_numer = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'acrDenominator',               IF(me.acr_denom = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                'uamccNumerator',               IF(me.uamcc_numerator = 1,
+                                                   CAST(TRUE AS JSON), CAST(FALSE AS JSON))
+              ),
+
+              -- diagnoses: mra1_encounter_icd_codes when available, else empty array
+              'diagnoses', (
+                SELECT JSON_ARRAYAGG(obj)
+                FROM (
+                  SELECT JSON_OBJECT(
+                    'id',               aic.id,
+                    'icd_code',         aic.diagnosis_code,
+                    'icd_desc',         aic.diagnosis_desc,
+                    'onset_date',       DATE_FORMAT(aic.onset_date, '%Y-%m-%d'),
+                    'problem_type',     aic.problem_type,
+                    'icd_order',        aic.icd_order,
+                    'status',           COALESCE(aic.status, 'Active'),
+                    'hcc_number',       hcd.hcc,
+                    'hcc_score',        hcd.community_nondual_aged,
+                    'hcc_included',     IF(hcd.hcc IS NOT NULL,
+                                           CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                    'is_comorbid',      IF(aic.is_comorbid = 1,
+                                           CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                    'agreement_status', COALESCE(aic.agreement_status, 'Agree'),
+                    'source',           COALESCE(aic.source, 'mra1')
+                  ) AS obj
+                  FROM adt_encounter_icd_codes aic
+                  LEFT JOIN mra_hcc_coefficients hcd
+                    ON hcd.diagnosis_code = aic.diagnosis_code
+                   AND hcd.active_date <= NOW() AND hcd.inactive_date >= NOW()
+                  WHERE aic.encounter_nr = me.encounter_nr
+                  ORDER BY aic.icd_order
+                ) _diag
+              ),
+
+              -- billing CPT procedures — same join, encounter_nr is the key
+              'procedures', (
+                SELECT JSON_ARRAYAGG(
+                  JSON_OBJECT(
+                    'id',             CONCAT(cpt.bb_Code, '_', DATE_FORMAT(me.enc_admit_date, '%Y-%m-%d')),
+                    'billing_code',   cpt.bb_Code,
+                    'cpt_modifier',   cpt.bb_modifier,
+                    'procedure_date', DATE_FORMAT(me.enc_admit_date, '%Y-%m-%d'),
+                    'revenue_code',   cpt.CLM_LINE_PROD_REV_CTR_CD
+                  )
+                )
+                FROM mra1_encounter_bill_cpts cpt
+                WHERE cpt.encounter_nr = me.encounter_nr
+              ),
+
+              -- enc_medications: match on admit date since mra1 has no encounter_date
+              'enc_medications', (
+                SELECT JSON_ARRAYAGG(
+                  JSON_OBJECT(
+                    'id',               dm.id,
+                    'ndc_id',           dm.NDCID,
+                    'rxnorm_id',        dm.RxnormID,
+                    'medication_name',  dm.medications,
+                    'dose',             dm.dose,
+                    'dose_unit',        dm.dose_unit,
+                    'route',            dm.rout,
+                    'schedule',         dm.schedule,
+                    'start_date',       DATE_FORMAT(dm.start_date, '%Y-%m-%d'),
+                    'stop_date',        DATE_FORMAT(dm.stop_date, '%Y-%m-%d'),
+                    'prescribed_doctor',dm.prescribed_doctor,
+                    'delete_status',    dm.delete_status
+                  )
+                )
+                FROM drfirst_patient_medications dm
+                WHERE dm.patientid = p_origid
+                  AND dm.admission = 'yes'
+                  AND DATE(dm.start_date) = me.enc_admit_date
+              ),
+
+              -- audit: mra1 rows have no audit workflow fields — carry nulls
+              'audit', JSON_OBJECT(
+                'care_status',   NULL,
+                'audit_status',  NULL,
+                'mos',           me.enc_proc_type,
+                'mos_type',      me.enc_proc_type,
+                'tfu_numerator', me.tfu_numer,
+                'mif_exclusion', CAST(FALSE AS JSON),
+                'census_status', NULL
+              )
+            ) AS enc_obj
+
+          FROM mra1_encounter me
+          WHERE me.patient_id = p_origid
+
         ) enc_rows
       ),
 
