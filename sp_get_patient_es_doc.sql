@@ -539,7 +539,7 @@ sp_get_patient_es_doc: BEGIN
       --   Observation | Part B | Part C | Part D | Part DME | Psychiatric |
       --   Rehabilitation | SNF
       'encounters', (
-        SELECT JSON_ARRAYAGG(enc_obj ORDER BY enc_date DESC)
+        SELECT JSON_ARRAYAGG(enc_obj)
         FROM (
 
           -- ── Branch A: ADT / EMR encounters ─────────────────────────────────
@@ -872,7 +872,7 @@ sp_get_patient_es_doc: BEGIN
                                            CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
                     'is_comorbid',      IF(aic.is_comorbid = 1,
                                            CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-                    'agreement_status', COALESCE(aic.agreement_status, 'Agree'),
+                    'agreement_status', 'Agree',
                     'source',           COALESCE(aic.source, 'mra1')
                   ) AS obj
                   FROM adt_encounter_icd_codes aic
@@ -937,6 +937,8 @@ sp_get_patient_es_doc: BEGIN
 
           FROM mra1_encounter me
           WHERE me.patient_id = p_origid
+
+          ORDER BY enc_date DESC
 
         ) enc_rows
       ),
