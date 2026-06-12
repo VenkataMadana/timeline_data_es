@@ -118,19 +118,22 @@ code{font-family:'Cascadia Code','Consolas',monospace;font-size:10px;background:
 </table></div>
 
 <!-- ── CARE TEAM ── -->
-<div id="care_team" class="sec-hdr">patient.care_team{} <span class="badge">Source: adt_patient + adt_encounter</span></div>
+<div id="care_team" class="sec-hdr">patient.care_team{} <span class="badge">Source: dc_bene_alignment_rostr_m01 (latest row) + cds_patient_personell_assocs → personell</span></div>
 <div class="tbl-wrap"><table>
 <tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
-<tr><td class="json-path">care_team.dce_provider</td><td><code>adt_patient</code></td><td><code>sp_dr_1</code></td><td>varchar(120)</td><td>—</td><td>Direct copy</td><td>DCE attributed provider — key for ACO reporting</td></tr>
-<tr><td class="json-path">care_team.dce_provider_npi</td><td><code>adt_patient</code></td><td><code>dce_prov_npi_nr</code></td><td>varchar(25)</td><td>—</td><td>Direct copy</td><td>NPI for provider attribution</td></tr>
-<tr><td class="json-path">care_team.dce_group</td><td><code>adt_patient</code></td><td><code>facility_name</code></td><td>varchar(250)</td><td>—</td><td>Direct copy</td><td>DCE group attribution</td></tr>
-<tr><td class="json-path">care_team.dce_group_id</td><td><code>adt_patient</code></td><td><code>facility_nr</code></td><td>bigint</td><td>—</td><td>Direct copy</td><td>Group ID for roster management</td></tr>
-<tr><td class="json-path">care_team.primary_doctor</td><td><code>adt_patient</code></td><td><code>primary_doctor</code></td><td>varchar(120)</td><td>—</td><td>Direct copy</td><td>PCP attribution for HEDIS, AWV</td></tr>
-<tr><td class="json-path">care_team.last_pcp_visit</td><td><code>adt_patient</code></td><td><code>Last_PCP_Visit_Date</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>Identifies overdue PCP visits</td></tr>
-<tr><td class="json-path">care_team.next_pcp_visit</td><td><code>adt_patient</code></td><td><code>Next_Office_Visit</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>Scheduling gap detection</td></tr>
-<tr><td class="json-path">care_team.market_id</td><td><code>adt_encounter</code></td><td><code>market_id</code></td><td>int</td><td>—</td><td>From most recent encounter</td><td>Market-level analytics</td></tr>
-<tr><td class="json-path">care_team.market_name</td><td><code>adt_encounter</code></td><td><code>market_name</code></td><td>varchar(100)</td><td>—</td><td>From most recent encounter</td><td>Market-level analytics</td></tr>
-<tr><td class="json-path">care_team.member_type</td><td><code>transportation_benefit</code></td><td><code>member_type</code></td><td>varchar</td><td>—</td><td>Direct copy (Medicare/Medicaid)</td><td>Benefit eligibility determination</td></tr>
+<tr><td class="json-path">care_team.market_id</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>market_id</code></td><td>bigint</td><td>mm_curr_mbi_id</td><td>Latest row by mm_date where ALIGN_STATUS_CODE IN ('AL','D1Y')</td><td>Market-level analytics and routing</td></tr>
+<tr><td class="json-path">care_team.market_name</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>market_names</code></td><td>varchar(100)</td><td>mm_curr_mbi_id</td><td>Latest row by mm_date</td><td>Market label for reporting</td></tr>
+<tr><td class="json-path">care_team.group_name</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>dce_group_name</code></td><td>varchar(100)</td><td>mm_curr_mbi_id</td><td>Latest row by mm_date</td><td>DCE group name for ACO attribution</td></tr>
+<tr><td class="json-path">care_team.sub_group_name</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>dce_sub_group_name</code></td><td>varchar(100)</td><td>mm_curr_mbi_id</td><td>Latest row by mm_date</td><td>Sub-group segmentation</td></tr>
+<tr><td class="json-path">care_team.subgroup_id</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>dce_sub_group_nr</code></td><td>bigint</td><td>mm_curr_mbi_id</td><td>Latest row by mm_date</td><td>Sub-group numeric ID for roster management</td></tr>
+<tr><td class="json-path">care_team.facility_nr</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>dce_group_nr</code></td><td>bigint</td><td>mm_curr_mbi_id</td><td>Latest row by mm_date</td><td>DCE group numeric ID — ACO roster key</td></tr>
+<tr><td class="json-path">care_team.facility_name</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>dce_group_name</code></td><td>varchar(100)</td><td>mm_curr_mbi_id</td><td>Latest row by mm_date</td><td>Human-readable group label</td></tr>
+<tr><td class="json-path">care_team.dce_provider</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>dce_provider_name</code></td><td>varchar(100)</td><td>mm_curr_mbi_id</td><td>Latest row by mm_date</td><td>Attributed DCE provider — ACO reporting</td></tr>
+<tr><td class="json-path">care_team.dce_provider_npi</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>prov_npi_nr</code></td><td>varchar(20)</td><td>mm_curr_mbi_id</td><td>Latest row by mm_date</td><td>NPI for provider attribution and credentialing</td></tr>
+<tr><td class="json-path">care_team.care_manager</td><td><code>cds_patient_personell_assocs</code> → <code>personell</code></td><td><code>personell.name</code></td><td>varchar(125)</td><td>origid</td><td>JOIN personell ON nr = personell_id; latest by created_date</td><td>Assigned care manager for outreach and CCM</td></tr>
+<tr><td class="json-path">care_team.last_pcp_visit</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>Last_PCP_Visit_Date</code></td><td>date</td><td>mm_curr_mbi_id</td><td>ISO-8601; latest row by mm_date</td><td>PCP visit recency — AWV and care gap detection</td></tr>
+<tr><td class="json-path">care_team.next_pcp_visit</td><td><code>adt_patient</code></td><td><code>Next_Office_Visit</code></td><td>date</td><td>—</td><td>ISO-8601</td><td>Upcoming visit scheduling gap detection</td></tr>
+<tr><td class="json-path">care_team.days_since_pcp_visit</td><td><code>dc_bene_alignment_rostr_m01</code></td><td><code>Last_PCP_Visit_Date</code></td><td>date</td><td>mm_curr_mbi_id</td><td>DATEDIFF(CURDATE(), Last_PCP_Visit_Date)</td><td>Overdue PCP visit flag — rule engine input</td></tr>
 </table></div>
 
 <!-- ── ENROLLMENT ── -->

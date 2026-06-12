@@ -1,0 +1,4 @@
+encounter. Provider 
+specialty and specialty_code  is required 
+ 
+enc_medications is available cclf, bcd but not for adt

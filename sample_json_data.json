@@ -1,7 +1,6 @@
 {
   "patient": {
     "id": "7H49DQ0VG28",
-    "mbi": "hl7_hie_data",
     "origid": "7H49DQ0VG28",
     "contact": {
       "email": "",
@@ -24,24 +23,20 @@
       }
     },
     "care_team": {
-      "group_name": null, 
-      "sub_group_name": null,  -- get it from rooster 
       "market_id": 2,
       "market_name": "Kentucky",
-      "care_manager": "Amy Ford RN, BSN",
-      "dce_group_id": 0, -- remove it , same as facility nr
-      "group_id": null, -- same as facility nr
+      "group_name": null,
+      "sub_group_name": null,
       "subgroup_id": null,
-      "dce_provider": null,
       "facility_nr": 0,
       "facility_name": null,
+      "dce_provider": null,
+      "dce_provider_npi": null,
+      "care_manager": "Amy Ford RN, BSN",
       "last_pcp_visit": null,
       "next_pcp_visit": null,
-      "primary_doctor": null,
-      "dce_provider_npi": null,
       "days_since_pcp_visit": null
     },
-    "account_id": "10029193547", -- remove it
     "labs": null,
     "sdoh": {
       "meal_plans": null,
@@ -2997,7 +2992,6 @@
     "encounters": [
       {
         "id": 202512049923748218,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -3031,14 +3025,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432901
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -3050,7 +3040,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -3062,25 +3051,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202512049923748218,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202512019923747251,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -3114,14 +3093,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -3209,7 +3184,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -3221,25 +3195,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202512019923747251,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202511249923745847,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -3273,14 +3237,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -3292,7 +3252,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -3304,25 +3263,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202511249923745847,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202511209923744748,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -3356,14 +3305,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -3375,7 +3320,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -3387,25 +3331,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202511209923744748,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202511119923742042,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -3439,14 +3373,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432696
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -3458,7 +3388,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -3470,25 +3399,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202511119923742042,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202511049923740081,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -3522,14 +3441,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -3572,7 +3487,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -3584,25 +3498,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202511049923740081,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202510299923738409,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -3636,14 +3540,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -3716,7 +3616,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -3728,25 +3627,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202510299923738409,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202510279923737881,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -3780,14 +3669,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -3860,7 +3745,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -3872,25 +3756,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202510279923737881,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202510209923736085,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -3924,14 +3798,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -4004,7 +3874,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -4016,25 +3885,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202510209923736085,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202510169923734986,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -4068,14 +3927,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -4148,7 +4003,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -4160,25 +4014,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202510169923734986,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202510149923734296,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -4212,14 +4056,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -4292,7 +4132,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -4304,25 +4143,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202510149923734296,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202510109923733395,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -4356,14 +4185,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -4436,7 +4261,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -4448,25 +4272,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202510109923733395,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202510079923732354,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -4500,14 +4314,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -4550,7 +4360,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -4562,25 +4371,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202510079923732354,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202510029923731109,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -4614,14 +4413,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -4724,7 +4519,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -4736,25 +4530,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202510029923731109,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202509309923730347,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -4788,14 +4572,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -4853,7 +4633,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -4865,25 +4644,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202509309923730347,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202509249923728816,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -4917,14 +4686,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -4997,7 +4762,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -5009,25 +4773,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202509249923728816,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202509229923728170,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -5061,14 +4815,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -5141,7 +4891,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -5153,25 +4902,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202509229923728170,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202509189923727222,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -5205,14 +4944,10 @@
           "oscar_num": null,
           "hospital_nr": 1022427159
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -5285,7 +5020,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -5297,25 +5031,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202509189923727222,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202509119923725131,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -5349,14 +5073,10 @@
           "oscar_num": null,
           "hospital_nr": 1022426982
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -5368,7 +5088,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -5380,25 +5099,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202509119923725131,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202509099923724436,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -5432,14 +5141,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432701
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -5482,7 +5187,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -5494,25 +5198,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202509099923724436,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202509029923722462,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -5546,14 +5240,10 @@
           "oscar_num": null,
           "hospital_nr": 1022426982
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -5626,7 +5316,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -5638,25 +5327,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202509029923722462,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202508279923721033,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -5690,14 +5369,10 @@
           "oscar_num": null,
           "hospital_nr": 1022426982
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -5755,7 +5430,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -5767,25 +5441,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202508279923721033,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202508269923720692,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -5819,14 +5483,10 @@
           "oscar_num": null,
           "hospital_nr": 1022433082
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "261QR0400X",
-          "care_status_personnel": null
+          "attending_taxonomy": "261QR0400X"
         },
         "admission": {
           "purpose": null,
@@ -5838,7 +5498,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -5850,25 +5509,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202508269923720692,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202508259923720324,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -5902,14 +5551,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432701
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -5921,7 +5566,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -5933,25 +5577,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202508259923720324,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202508129923716764,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -5985,14 +5619,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -6035,7 +5665,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -6047,25 +5676,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202508129923716764,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202507299923713177,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -6099,14 +5718,10 @@
           "oscar_num": null,
           "hospital_nr": 1022433086
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -6118,7 +5733,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -6130,25 +5744,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202507299923713177,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202507159923709549,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -6182,14 +5786,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -6232,7 +5832,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -6244,25 +5843,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202507159923709549,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202506269923704913,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -6296,14 +5885,10 @@
           "oscar_num": null,
           "hospital_nr": 1022426982
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -6361,7 +5946,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -6373,25 +5957,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202506269923704913,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202506179923702509,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -6425,14 +5999,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -6475,7 +6045,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -6487,25 +6056,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202506179923702509,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202506099923698534,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -6539,14 +6098,10 @@
           "oscar_num": null,
           "hospital_nr": 1022439543
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -6558,7 +6113,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -6570,25 +6124,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202506099923698534,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202505289923695166,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -6622,14 +6166,10 @@
           "oscar_num": null,
           "hospital_nr": 1022426982
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -6762,7 +6302,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -6774,25 +6313,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202505289923695166,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202505209923693455,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -6826,14 +6355,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -6891,7 +6416,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -6903,25 +6427,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202505209923693455,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202505149923692271,
-        "pos": 22,
         "audit": {
           "mos": "Kristin Bober",
           "mos_type": "adt",
@@ -6955,14 +6469,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432697
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -7005,7 +6515,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": true,
@@ -7017,25 +6526,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202505149923692271,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202505089923690790,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -7069,14 +6568,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -7119,7 +6614,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -7131,25 +6625,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202505089923690790,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202505059923689949,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -7183,14 +6667,10 @@
           "oscar_num": null,
           "hospital_nr": 1022433140
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -7248,7 +6728,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -7260,25 +6739,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202505059923689949,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202504299923688463,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -7312,14 +6781,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432692
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -7362,7 +6827,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -7374,25 +6838,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202504299923688463,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202504259923687443,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -7426,14 +6880,10 @@
           "oscar_num": null,
           "hospital_nr": 1022437358
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -7445,7 +6895,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -7457,25 +6906,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202504259923687443,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202504239923686844,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -7509,14 +6948,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -7559,7 +6994,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -7571,25 +7005,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202504239923686844,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202503289923680622,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -7623,14 +7047,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432915
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -7673,7 +7093,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -7685,25 +7104,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202503289923680622,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202503259923679758,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -7737,14 +7146,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432712
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -7787,7 +7192,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -7799,25 +7203,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202503259923679758,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202503079923675853,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -7851,14 +7245,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432687
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -7931,7 +7321,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -7943,25 +7332,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202503079923675853,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202503059923675266,
-        "pos": 22,
         "audit": {
           "mos": "",
           "mos_type": "adt",
@@ -7995,14 +7374,10 @@
           "oscar_num": null,
           "hospital_nr": 1022432699
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -8045,7 +7420,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -8057,25 +7431,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202503059923675266,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202502259923673186,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -8109,14 +7473,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -8159,7 +7519,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -8171,25 +7530,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202502259923673186,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202501289923665267,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -8223,14 +7572,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -8273,7 +7618,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -8285,25 +7629,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202501289923665267,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202501149923661670,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -8337,14 +7671,10 @@
           "oscar_num": null,
           "hospital_nr": 1022426982
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -8447,7 +7777,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -8459,25 +7788,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202501149923661670,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202412319923657998,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -8511,14 +7830,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -8561,7 +7876,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -8573,25 +7887,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202412319923657998,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202412279923657063,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -8625,14 +7929,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -8675,7 +7975,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -8687,25 +7986,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202412279923657063,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202412109923652581,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -8739,14 +8028,10 @@
           "oscar_num": null,
           "hospital_nr": 1022426982
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -8789,7 +8074,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -8801,25 +8085,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202412109923652581,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202412039923650274,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -8853,14 +8127,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -8903,7 +8173,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -8915,25 +8184,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202412039923650274,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "30",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202411259923648282,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -8967,14 +8226,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -8986,7 +8241,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -8998,25 +8252,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202411259923648282,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202411159923645692,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -9050,14 +8294,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -9069,7 +8309,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -9081,25 +8320,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202411159923645692,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "admitted",
-        "place_of_service": "22"
+        "encounter_status": "admitted"
       },
       {
         "id": 202411089923643860,
-        "pos": 22,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -9133,14 +8362,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 22,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -9183,7 +8408,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -9195,25 +8419,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202411089923643860,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "22"
+        "encounter_status": "discharge"
       },
       {
         "id": 202410279923640330,
-        "pos": 23,
         "audit": {
           "mos": "Kendra Perkins",
           "mos_type": "adt",
@@ -9247,14 +8461,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 23,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -9297,7 +8507,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -9309,25 +8518,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202410279923640330,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "23"
+        "encounter_status": "discharge"
       },
       {
         "id": 202410279923641319,
-        "pos": 23,
         "audit": {
           "mos": null,
           "mos_type": "adt",
@@ -9361,14 +8560,10 @@
           "oscar_num": null,
           "hospital_nr": 10223650
         },
-        "pos_curr": 23,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -9380,7 +8575,6 @@
         },
         "diagnoses": null,
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -9392,25 +8586,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202410279923641319,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": null,
-        "encounter_type": "",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "duplicate",
-        "place_of_service": "23"
+        "encounter_status": "duplicate"
       },
       {
         "id": 202409119823624370,
-        "pos": 24,
         "audit": {
           "mos": "Kendra Perkins",
           "mos_type": "adt",
@@ -9444,14 +8628,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 21,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": null,
-          "care_status_personnel": null
+          "attending_taxonomy": null
         },
         "admission": {
           "purpose": null,
@@ -9524,7 +8704,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -9536,122 +8715,15 @@
           "readmit_rate_pct": 99.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202409119823624370,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": [
-          {
-            "id": "REM-640970",
-            "source": "",
-            "status": "",
-            "category": "ADT Admission",
-            "is_email": false,
-            "created_by": "sarnold",
-            "description": "9/11/24: SARNOLD - Patient admitted 9/11/24 to Pikeville Medical Center for diagnosis of R Hip osteoarthritis. Operator states patient is in room 778-1 and transfers to RN Rachel. RN confirms patient had a R hip arthroplasty today and is doing well. RN states patient will stay tonight for recovery. CCM will follow up tomorrow. Sarnold, RN CCM. ",
-            "created_date": "2024-09-11",
-            "reminder_date": "2024-09-11T14:51:02",
-            "reminder_name": "Called Facility - Spoke With"
-          },
-          {
-            "id": "REM-642799",
-            "source": "",
-            "status": "",
-            "category": "Census Care Coordination",
-            "is_email": false,
-            "created_by": "sarnold",
-            "description": "9/12/24: SARNOLD - Pikeville operator states patient remains in 778-1 and transfers to nurses station. CCM connected again with RN Rachel who states patient is planning to discharge home later today, she is pending some home equipment at this time. Once the equipment arrives she will be able to go home. CMOS Andrea notified with update. Sarnold, RN CCM.",
-            "created_date": "2024-09-12",
-            "reminder_date": "2024-09-12T14:06:39",
-            "reminder_name": "Called Facility - Spoke With"
-          },
-          {
-            "id": "REM-642868",
-            "source": "",
-            "status": "",
-            "category": "ADT Admission",
-            "is_email": false,
-            "created_by": "amorgan",
-            "description": "9/12/24. New inpatient notification, admitted 9/11 @PIKEVILLE MEDICAL CENTER INC. CCM Suzanne notified of patient discharge to home today. Called facility and transferred to room #778-1, patient answered confirming that she is planning to discharge home today. Advised of HFU appointment with PCP, she stated that she'd like to wait to schedule once she is home because she coordinates her appointment with her friend who drives her. She thanked for checking in and proceeded to disconnect call. Added to feed to reflect. No further follow up from CMOS needed. -- Amorgan CMOS",
-            "created_date": "2024-09-12",
-            "reminder_date": "2024-09-12T14:20:49",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-644034",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "blewis",
-            "description": "CM call to patient at 6064328969. CM introduced self and ilumed services and they are working alongside Dr. PCP who wants to ensure you have access to resources and services to help maintain your health.  Patient agrees to discuss recent hospitalization and follow up outreaches over the next 30 days.  \n \nSTCM declination: no\nEMR access available yes- EMR Bamboo\nLast PCP visit: \nAdmitting Dx : Unilateral primary osteoarthritis, right hip (M1611); Presence of right artificial hip joint (Z96641); Osteoarthritis of hip unspecified\n \n         \nPMH: \n                 Patient reports:  Dressing to hip CDI.  No s/s infection noted. Pt has a friend that has been staying with her and providing assistance.\n                 Pt symptoms currently: occassional pain\n                 Vitals: \n \nPMH-Chronic Conditions:   osteoarthritis of hips\nRheumatoid arthritis\nChronic obstructive Pulmonary disease\nMyesthenia Gravis-Myoneural Disorder-Guillain-\nBarre Syndrone-inflammatory and toxic neuropathy\n\nMedications: Oxycodone 5/325mg and Xarelto. Pt understands that medications are to help her manage the pain\n                 \nCM actions: Pt instructions on how to manage pain to hip; medication and watch for GI symptoms like N/V and constipation;, take stool softeners as prescribed and drink plenty of fluids. Apply ice to hips as ordered for pain and swelling. Change dressing to hip as ordered: tomorrow and Wednesday and proceed to shower after last dressing change next week if no s/s infection like redness, drainage. Physical acitivity as prescribed with use of assistive device. \nHome Adjustments: Make your home safer by removing tripping hazards and installing grab bars in key areas like the bathroom\nPt verbalized understanding.\nOrientation: pt able to answer questions appropriately\nSocial Supports: \n \nADL\u00b4s: pt is independent with ADL's \n \nDME: shower chair and grab bars in shower\nRecent/Upcoming appointments: pt to call Dr Fords office for f/u appt. CM offered to make appt and she declined the offer. \n\nNext outreach: CM provided direct contact information for additional questions/concerns. Follow up week of 9/16/24\n\n B. Lewis RN \n",
-            "created_date": "2024-09-13",
-            "reminder_date": "2024-09-13T10:21:56",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-645128",
-            "source": "",
-            "status": "",
-            "category": "ADT DISCHARGE",
-            "is_email": false,
-            "created_by": "kperkins",
-            "description": "09/13/24 Kendra Perkins MOS: Per ADT, patient was admitted to Pikeville Medical Center on 09/11/24 for a right hip replacement. Patient was discharged on 09/12/24. I called to speak with patient today to discuss PCP follow up appt. Patient reports that she is doing well following her surgery. Patient reports that she has had alot of pain with surgery but it is expected. Patient reports that she is scheduled for a follow up with PCP next week on 09/17/24 at 10:00. Patient requests transportation assistance with this appt. Transportation booked for patient with Sandy Valley Transportation. Patient reports that she spoke with our case manager, Beverly, earlier today also. Patient thankful for our services. I encouraged patient to take her discharge papers with her to PCP follow up appt. Pt verbalized understanding and ended the call today.",
-            "created_date": "2024-09-13",
-            "reminder_date": "2024-09-13T14:37:17",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-646272",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "9/16/2024 Charzes Flowers, RN. CM received missed call/voicemail from patient from 606-213-5352 stating:\n\n\"Hello, this is Carol Bailey 606-213-5352. You all said you provide transportation for me tomorrow by Sandy Valley Transportation to go to the doctor and the number you gave me is incorrect and I called them and no one was available. So please call me back so that I can get that straightened out today because the appointment is early in the morning. Thank you.\"\n\nCM returned patient's call and patient answered. CM introduced self as nurse case manager with ilumed partnering with PCP-Suzanned Ford's office and verified patient's identity. Patient reported she was given the wrong number for transportation but she got it straight now and was able to arrange transportation for her doctor's appointment tomorrow. Patient voiced no further needs or concerns at this time - Charzes Flowers, RN",
-            "created_date": "2024-09-16",
-            "reminder_date": "2024-09-16T11:02:22",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-653849",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "9/24/2024 Charzes Flowers, RN. CM call to patient at 606-432-8969. CM introduced self and ilumed services, working alongside Dr. Suzanne Ford who wants to ensure you have access to resources and services to help maintain your health.  Patient agrees to discuss recent hospitalization and follow up outreaches over the next 30 days. \n\nSTCM declination: No\nEMR access available (yes or no): No\nLast PCP visit: 9/17/2024 per patient\nAdmitting Dx : R Hip Replacement\n\nPMH:\no\tPatient reports: she is doing fine after hip replacement surgery, stated she just came back for surgeon\u00b4s appointment this morning\no\tPt symptoms currently: stated a little swelling in right leg. Reported swelling is due to a combination of her arthritis and surgery, surgeon is aware and instructed her to continue to apply ice and elevate leg. Stated incision looks good, no increased redness or swelling. Reported pain level is 4-5/10 but she has been moving around more this morning due to her surgeon\u00b4s appointment.\no\tVitals: 147/75 at surgeon\u00b4s appointment this morning.\n\no\tPMH-Chronic Conditions:  COPD, RA per scorecard; Osteoarthritis to R hip\n\no\tMedications: \nAtenolol 50mg daily\nCelecoxib 200mg bid (surgeon stated she can go back to taking)\nVibegron 75mg daily\nEstradiol 0.1mg vaginal cream\nPatoprazole 40mg daily\nSimvastatin 10mg daily\nLosartan potassium 5mg daily\nLow dose antibiotic for UTI (pt did not know the name and did have near her to tell CM)\nPer scorecard, verified with patient\n\nCompleted per patient: \nHTCZ 12.5mg\nPrednisone 5mg\nSucralfate 1000mg\n\nNew at Discharge:\nAspirin 325mg daily for blood clots\nOxycodone- per pt, no longer takes\nExtra-strength Tylenol prn\n\nPatient denied questions or concerns regarding medications. Stated she is taking medications as prescribed and consulting with rheumatologist on her medications.\n\no\tCM actions: CM educated on importance to watch for signs/symptoms of infection (fever, chills, increased redness/swelling/drainage). CM educated on watching for signs of blood clot (swelling, pain, or redness in the leg, or shortness of breath). CM educated on patient blood pressure being less than 140/90 and encouraging patient to ask her doctor for blood pressure guidelines. Patient verbalized understanding to all instructions.\n\no\tOrientation: Alert and able to answer questions appropriately\n\no\tSocial Supports: Friends\n\no\tADL\u00b4s: Independent\n\no\tDME: walker, cane\n\no\tRecent/Upcoming appointments: Reported she just saw her surgeon (Dr. Pugh) today. Stated surgeon changed her bandage stated incision looks good. Patient said she is to continue to change dressing every 5 days and after she runs out of the bandage she does not have to change dressing anymore. Reported Dr. Pugh\u00b4s nurse is a friend of hers and the nurse changes the dressing for her. Patient stated she is scheduled to see Dr. Pugh again on 10/29/2024. Patient reported she saw PCP- Dr. Suzanne Ford on 9/17/2024 and she stated it was a waste of time because PCP said she did not need to come to HFU appointment but she went because someone told her she needed to go.\n\nNext outreach: CM provided direct contact information for additional questions/concerns. \n\nFollow up week of 9/30/2024\n\nCharzes Flowers, RN\n",
-            "created_date": "2024-09-24",
-            "reminder_date": "2024-09-24T10:25:38",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-658075",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "9/30/2024 Charzes Flowers, RN. CM call to patient at 606-432-8969. CM introduced self and ilumed services, working alongside Dr. Suzanne Ford who wants to ensure you have access to resources and services to help maintain your health.  Patient agrees to discuss recent hospitalization and follow up outreaches over the next 30 days. \n\nSTCM declination: No\nEMR access available (yes or no): No\nLast PCP visit: 9/17/2024 per patient; no changes\nAdmitting Dx : R Hip Replacement\n\nPMH:\no\tPatient reports: \"everything is fine.\" Reported surgeon\u00b4s nurse (which is her friend) changed her bandage yesterday. Patient stated she has two more bandages for a dressing change but stated surgeon\u00b4s nurse is going to ask the surgeon how much longer patient\u00b4s dressing needs to be changed.\no\tPt symptoms currently: minimal pain; 1/10. Stated incision stings a little every now and then but very minimal.\no\tVitals: has a monitor but has not had blood pressure checked since was at surgeon\u00b4s follow-up appointment. Reported her blood pressure is usually in 140s/70s. Stated the 140s is a little high but normal for her.\n\no\tPMH-Chronic Conditions:  COPD, RA per scorecard; Osteoarthritis to R hip; per previous call, no changes\n\no\tMedications: \nAtenolol 50mg daily\nCelecoxib 200mg bid (surgeon stated she can go back to taking)\nVibegron 75mg daily\nEstradiol 0.1mg vaginal cream\nPatoprazole 40mg daily\nSimvastatin 10mg daily\nLosartan potassium 5mg daily\nLow dose antibiotic for UTI (pt did not know the name and did have near her to tell CM)\nPer scorecard, verified with patient\n\nCompleted per patient: \nHTCZ 12.5mg\nPrednisone 5mg\nSucralfate 1000mg\n\nNew at Discharge:\nAspirin 325mg daily for blood clots\nOxycodone- per pt, no longer takes\nExtra-strength Tylenol prn\n\nMedications same per previous call, no changes. Patient stated she was prescribed Xarelto and aspirin at discharge but when she went to her follow up appointment with her surgeon on 9/24/2024, he discontinued the Xarelto and told her to just take the aspirin.\n\no\tCM actions: CM educated on signs of blood clot (swelling, pain, or redness in the leg, or shortness of breath). CM educated on monitoring blood pressure and sharing results with her doctors. CM educated on signs of healing is lessening surgical symptoms, including pain. Patient verbalized understanding to all instructions.\n\no\tOrientation: Alert and able to answer questions appropriately\n\no\tSocial Supports: Friends; per previous call, no changes\n\no\tADL\u00b4s: Independent; per previous call, no changes\n\no\tDME: walker, cane; per previous call, no changes\n\no\tRecent/Upcoming appointments: Reported she is scheduled to see surgeon (Dr. Pugh) on 10/29/2024 and PCP (Dr. Ford) in November. \n\nNext outreach: CM provided direct contact information for additional questions/concerns. Patient stated she is doing well, have a good support system and seeing her surgeon. Denied further questions, concerns, or needs. CM informed patient of end of STCM services but can call if patient needed CM\u00b4s assistance. Patient verbalized understanding. STCM to close at this time.\n\nCharzes Flowers, RN\n",
-            "created_date": "2024-09-30",
-            "reminder_date": "2024-09-30T09:57:15",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          }
-        ],
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "24"
+        "encounter_status": "discharge"
       },
       {
         "id": 202407029823606350,
-        "pos": 23,
         "audit": {
           "mos": "Kendra Perkins",
           "mos_type": "adt",
@@ -9685,14 +8757,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 23,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -9735,7 +8803,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -9747,86 +8814,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202407029823606350,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": [
-          {
-            "id": "REM-546422",
-            "source": "",
-            "status": "",
-            "category": "ADT Admission",
-            "is_email": false,
-            "created_by": "amorgan",
-            "description": "7/3/24. Amorgan. New inpatient notification, admitted 7/2 @PIKEVILLE MEDICAL CENTER INC. Called facility, operator stated patient NIH. Transferred to admissions department. Associate stated patient discharged on 7/3 @ 140AM. Added to feed to reflect. Email sent to Market Team of discharge. ",
-            "created_date": "2024-07-03",
-            "reminder_date": "2024-07-03T11:36:58",
-            "reminder_name": "Called Facility - Spoke With"
-          },
-          {
-            "id": "REM-547094",
-            "source": "",
-            "status": "",
-            "category": "ADT DISCHARGE",
-            "is_email": false,
-            "created_by": "mmata-garza",
-            "description": "07-03-2024 Margo Mata-Garza,MOS(1st Outreach): ADT notification rec'd DOS: 07-02-24. DOD: 07-03-24. Facility: Pikeville Medical Center (606) 430-3500. Dx: N30.90, R30.0. Pt complaint: unknown. Discharge disposition: Home. Pt Class: Emergency.\nPt aligned PCP/DCE Provider: Suzanne Ford,DO. DCE Facility: UMG. Verified EMR in: DH shows MBI \"No results found\"& No HFU-Last PCP appt: N/A & Bamboo no current encounters yet;HEI completed 01-26-24 by Charzes Flowers,RN. Pt has 5 ER & 1 Inpt admissions w/in a year(Total: 6). \nCalled patient for wellness check and to assist with scheduling ER/HFU appt, transportation benefits & HEI at ph#6064328969 no answer. Unable to educate pt to sched hosp fu appt w/in 72hr of d/c & transportation benefits. Will fu.  \n",
-            "created_date": "2024-07-03",
-            "reminder_date": "2024-07-03T14:52:51",
-            "reminder_name": "Unable to Contact"
-          },
-          {
-            "id": "REM-547573",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "7/3/2024 Charzes Flowers, RN. CM called patient at  606-432-8969 and patient answered call. CM introduced self as nurse case manager with ilumed, partnering with PCP-Dr. Ford. Patient remember CM from previous calls. Patient alert, oriented, and answered questions appropriately. Patient reported she went to ER due to her usual symptom of UTI (vomiting and unable to walk). Patient stated she was diagnosed with a UTI, given Rocephin shot and prescribed Cefdinir 300mg bid. Patient stated she talked to both PCP\u00b4s nurse (Dena) and PCP today and was told to take antibiotic as prescribed but once the urine culture comes back patient stated PCP said she may have to adjust the dosage of the medication. Patient reported she is scheduled to follow up with PCP on 7/12/2024 (did not have calendar near her with the time of the appointment) and scheduled to see an infectious disease doctor on 7/15/2024. Patient stated she has discussed with her doctors about her belief that her Orencia infusion is causing her repeated UTI. CM provided education on one of the side effects of Orencia is increased risk for infection and educated patient on good handwashing and avoiding people who are sick and taking her antibiotics as prescribed and completed. Patient verbalized understanding. Patient stated she lives alone, manages her medications and completes ADLs independently. Patient stated her sister and church members are her support system. HEI previously completed. Patient agreed to STCM services and CM calls. CM to follow up week of 7/8/2024.",
-            "created_date": "2024-07-03",
-            "reminder_date": "2024-07-03T17:09:55",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-555721",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "7/11/2024 Charzes Flowers, RN. CM called patient at 606-432-8969 and patient answered call. CM re-introduced self as nurse case manager with ilumed, providing short term case management services for Dr. Ford, and verified patient\u00b4s identity. Patient was alert, oriented, and answered questions appropriately. Patient reported she is doing ok. Stated she takes her last dose of antibiotics tomorrow. Denied vomiting and inability to use her legs (patient stated this is a symptom when she has a UTI). Patient stated her follow up appointment with PCP is on 7/12/2024 at 8:45am, Orencia infusion on 7/15/2024 and appointment with Infectious Disease doctor on 7/18/2024. CM educated patient on drinking plenty of water (to flush the kidneys), avoid coffee, alcohol, and soft drinks containing citrus juices and caffeine until the infection has cleared as these beverages may irritate the bladder. Patient verbalized understanding. CM to follow up with patient week of 7/15/2024.",
-            "created_date": "2024-07-11",
-            "reminder_date": "2024-07-11T11:02:31",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-566373",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "7/18/2024 Charzes Flowers, RN. CM called patient at 606-432-8969 and patient answered call. CM re-introduced self as nurse case manager with ilumed, providing short term case management services for Dr. Ford. Patient was alert, oriented, and answered questions appropriately and stated she was busy. CM offered to call back tomorrow or next week but patient stated for CM to go ahead and talk. When CM patient reported she is doing fine. Stated she saw PCP on 7/12/2024 and PCP referred her to see her Gynecologist due to concerns about thickness of her endometrium. Patient stated she saw Gynecologist on 7/16/2024 and was told endometrium was ok and gyn doctor will recheck it at patient\u00b4s annual visit in October. Patient stated she saw the Infectious Disease doctor, he started her on Macrobid daily and does not think Orencia infusion is what is causing her UTIs. Patient to follow up with Infectious Disease doctor in one month. CM informed patient to notify doctor of started noticing her usual symptoms of UTI which includes vomiting and inability to use her legs. Patient agreed. CM informed patient of end of STCM but stated patient can call CM for assistance if needed anything. Patient verbalized understanding. \n\nAs CM was documenting, CM received inbound call from patient. Patient inquired what could be the cause of her breaking out in sweat periodically. CM inquired if patient had any recent changes in her medications around the time patient noticed sweat breakouts. Patient stated the only new medication she started around the time is Gemtesa. CM informed patient hot flashes is a listed side effect of Gemtesa but encouraged patient to discuss with doctor to investigate further. Patient verbalized understanding. ",
-            "created_date": "2024-07-18",
-            "reminder_date": "2024-07-18T14:15:26",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          }
-        ],
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "23"
+        "encounter_status": "discharge"
       },
       {
         "id": 202403169823578915,
-        "pos": 23,
         "audit": {
           "mos": "Kendra Perkins",
           "mos_type": "adt",
@@ -9860,14 +8856,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 23,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -9895,7 +8887,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -9907,110 +8898,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202403169823578915,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": [
-          {
-            "id": "REM-415650",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "3/18/2024 Charzes Flowers, RN. CM called patient at 606-432-8969. Patient answered call and stated before I could state who I was, that she was on the way to the drug store and could not talk right now. Patient appeared rushed when answered call. Patient agreed to call back later. CM will continue outreach attempts throughout week of 3/18/2024.",
-            "created_date": "2024-03-18",
-            "reminder_date": "2024-03-18T10:04:30",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-416353",
-            "source": "",
-            "status": "",
-            "category": "1st Outreach",
-            "is_email": false,
-            "created_by": "kperkins",
-            "description": "03/18/24 Kendra Perkins MOS: Per ADT, patient was admitted to Pikeville Medical Center on 03/16/24 for UTI. Patient was discharged on 03/16/24. I tried to contact patient today on phone number 606-432-8969 and phone rang without answer. MOS will continue to outreach to patient to discuss hospital follow up appt with PCP.",
-            "created_date": "2024-03-18",
-            "reminder_date": "2024-03-18T13:42:05",
-            "reminder_name": "Unable to Contact"
-          },
-          {
-            "id": "REM-417401",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "3/19/2024 Charzes Flowers, RN. CM called patient at 606-432-8969. No answer to call. CM left voice message identifying self as nurse case manager with ilumed, provided CM's contact number for return call. CM will not escalate due to CM spoke with patient on yesterday. CM will continue outreach attempts throughout week of 3/18/2024.",
-            "created_date": "2024-03-19",
-            "reminder_date": "2024-03-19T10:03:39",
-            "reminder_name": "Left message"
-          },
-          {
-            "id": "REM-417758",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "3/19/2024 Charzes Flowers, RN. CM received missed call/voicemail from patient from 606-432-8969. CM returned patient's call and patient answered. CM verified patient\u00b4s identity, introduced self as a nurse case manager with ilumed providing short term case management services for Dr. Suzanne Ford, CM\u00b4s role, and ilumed services. Patient was alert, oriented, and answered questions appropriately. Patient reported she went to the hospital due to having a UTI. Patient stated she suddenly experienced fatigue, vomiting and could not move her legs; patient's sister took her to the ER and was treated with IM injection of antibiotic and given an antibiotic prescription (pt could not remember the name) but from past experience, antibiotic was not strong enough. Patient stated she called PCP on 3/18/2024 and was given a prescription for Keflex 500mg bid which she started yesterday. Patient reported she takes Orencia infusion for her arthritis and was told she cannot take antibiotics with infusions so they had to reschedule her infusion until 4/2/2024 when she will have completed the antibiotics. Patient reported she has a telehealth appointment with PCP on 3/28/2024 at 1:45pm. Patient\u00b4s support system includes her sister and church friends. Patient manages her medications and completes ADLs independently. HEI previously completed. CM instructed patient on importance of taking antibiotics as prescribed, washing hands before and after using the bathroom, wiping from front to back when using the restroom. Patient stated she believes the arthritis infusions is contributing to her frequent UTIs. CM explained that medications like Orencia may decrease the immune system, and therefore, can increase her risk for infections. Patient verbalized understanding. Patient also stated her urologist prescribed Gemtesa for urinary frequency and since started she is not having as much urinary urgency/frequency. Patient also reported her urologist is giving her samples for the next 3 months due to the cost of the medication. CM offered refer patient to social work for prescription assistance programs but patient declined at this time. CM will not add patient to escalation sheet due to PCP aware of ER visit on 3/18/2024 and treating patient. Patient agreed to short term case management services and follow up calls. Next follow up call week of 3/25/2024.\n",
-            "created_date": "2024-03-19",
-            "reminder_date": "2024-03-19T11:54:49",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-417823",
-            "source": "",
-            "status": "",
-            "category": "ADT DISCHARGE",
-            "is_email": false,
-            "created_by": "kperkins",
-            "description": "03/19/24 Kendra Perkins MOS: Case manager, Charzes Flowers RN, gave MOS an update on patient. CM was able to speak with patient today. Patient was able to speak with PCP office yesterday 3/18/24 in regards to ER visit and urine culture results. PCP treating patient and patient is scheduled for a telehealth follow up with PCP on 03/28/24. No further outreach at this time.",
-            "created_date": "2024-03-19",
-            "reminder_date": "2024-03-19T12:11:46",
-            "reminder_name": "Internal- No Outreach"
-          },
-          {
-            "id": "REM-426563",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "3/26/2024 Charzes Flowers, RN. CM called patient at 606-432-8969. CM verified patient\u00b4s identity, and re-introduced self as nurse case manager with ilumed, providing short term case management services for Dr. Suzanne Ford. Patient was alert, oriented, and answered questions appropriately. Patient denied new ER/hospital visit or changes to her medications or treatment plan since last CM call. Patient stated she is doing fine, denied urinary frequency/urgency, stating the Gemtesa is working well in decreasing urinary symptoms. Patient stated she will complete her antibiotics on Wednesday and stated is scheduled for Orencia infusion on 4/2/2024 for her arthritis. Patient reported she has a lot of back, hip, shoulder, and knee pain from arthritis. CM provided instruction on benefit of using ice/heat and taking warm baths/showers for arthritis pain relief. Patient verbalized understanding. Patient stated her PCP follow up telehealth visit is on 3/28/2024 at 1:45pm. Patient requested CM follow up call in 2 weeks. Next CM follow up call is week of 4/8/2024.",
-            "created_date": "2024-03-26",
-            "reminder_date": "2024-03-26T17:54:35",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-439707",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "4/9/2024 Charzes Flowers, RN. CM called patient at 606-432-8969. Patient answered call. CM re-introduced self as nurse case manager with ilumed, providing short term case management services for Dr. Suzanne Ford. Patient was alert, oriented, and answered questions appropriately. Patient reported she is doing well. Denied symptoms of UTI (vomiting, cannot walk all of a sudden). Reported she had to reschedule Orencia infusion until 4/11/2024 until her urinalysis showed negative (which it did). Reported she will be discussing with Rheumatologist whether infusions are causing her UTI. Stated she plans to talk to PCP about checking her urine more frequently to detect infection earlier. Patient reported she went to PCP follow up appointment on 3/28/2024. No changes made to her treatment plan. Reported next PCP appointment scheduled in June. CM introduced long term case management services to patient however patient declined, stating she is good for now. CM informed patient short term case management ending at this time and provided patient CM's number to call if needed assistance. Patient thanked CM. CM will close STCM case.\n",
-            "created_date": "2024-04-09",
-            "reminder_date": "2024-04-09T11:29:39",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          }
-        ],
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "23"
+        "encounter_status": "discharge"
       },
       {
         "id": 202401259817957006,
-        "pos": 23,
         "audit": {
           "mos": "Kendra Perkins",
           "mos_type": "adt",
@@ -10044,14 +8940,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 23,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": null
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -10079,7 +8971,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -10091,98 +8982,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202401259817957006,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": [
-          {
-            "id": "REM-364879",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "1/26/2024 Charzes Flowers, RN. CM called patient at 606-432-8969. Patient answered and identity verified. CM introduced self as nurse case manager with ilumed providing short term case management services for PCP-Dr. Suzanne Ford. CM explained CM's role and ilumed services. Patient alert, oriented, and answered questions appropriately. Patient reported she went to ER due to vomiting and severe joint pain and was diagnosed with UTI, which is her 4th UTI since September. Patient stated she also has Rheumatoid Arthritis and thinks when she has a UTI, it flares up her RA. Patient was prescribed oral antibiotics by ER doctor. Patient stated PCP's nurse, Deana called her this morning to inform her that Dr. Ford was prescribing another antibiotic because she did not think the antibiotic prescribed by the ER doctor was strong enough. Patient reported the Economy Pharmacy personnel will be dropping off prescription today. \nCM provided patient education about the importance of taking all antibiotics as prescribed to effectively treat infection. Patient verbalized understanding. CM also provided education regarding to watch for signs and symptoms of infection including, temperature greater than 100.4F, urinary frequency and urgency, and importance to wipe from front to back to prevent UTI. Patient verbalized understanding and stated every time she has gotten a UTI she usually throws up and has severe joint pain. CM provided instruction regarding taking warm showers for joint pain, using ambulatory assistive devices (walker/cane), using grab bars close to shower and toilet to prevent falls. Patient voice understanding and stated she has a walk-in shower, grab bars, but does not have trouble sitting down on commode. \nPatient lives alone. Support system includes her sister, nephew, and church friends. Patient is independent with ADLs. HEI completed with no disparities noted. Past medical history includes Rheumatoid arthritis, frequent UTIs, and high blood pressure. CM will not escalate for no HFU appointment due to PCP is aware of ER visit and is treating patient. Patient agreed to CM follow up call week of 1/29/2024.\n",
-            "created_date": "2024-01-26",
-            "reminder_date": "2024-01-26T12:44:07",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-365724",
-            "source": "",
-            "status": "",
-            "category": "ADT DISCHARGE",
-            "is_email": false,
-            "created_by": "kperkins",
-            "description": "01/29/2024 Kendra Perkins MOS: Patient was contacted last week by CM on 01/26/2024 and CM made PCP office aware of patient's admission and discharge. Patient declined for CM to have appt made with PCP office. PCP office reached out and spoke with patient. Patient is scheduled for follow up at PCP on 01/31/2024. ",
-            "created_date": "2024-01-29",
-            "reminder_date": "2024-01-29T09:59:10",
-            "reminder_name": "Unable to Contact"
-          },
-          {
-            "id": "REM-371050",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "2/2/2024 Charzes Flowers, RN. CM called patient at 606-432-8969. Phone rang several times with no answer then call ended. CM called again. Phone rang several times then stopped ringing but was still connected. Next CM call week of 2/5/2024.",
-            "created_date": "2024-02-02",
-            "reminder_date": "2024-02-02T10:45:35",
-            "reminder_name": "Unable to Contact"
-          },
-          {
-            "id": "REM-373625",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "2/6/2024 Charzes Flowers, RN. CM called patient at 606-432-8969, verified her identity, and re-introduced self as nurse case manager with ilumed, providing short term case management services for Dr. Suzanne Ford. Patient was alert, oriented, and answered questions appropriately. Patient denied new ER/hospital visit since last CM call. Patient reported her Rheumatologist informed her that the antibiotic (Levaquin) that patient was taking counteracted her rheumatoid arthritis medication (methotrexate). Rheumatologist instructed patient to stop taking the methotrexate until she completed the Levaquin (which patient has) and to restart methotrexate on Friday, 2/9/2024. Rheumatologist also prescribed prednisone, which patient has four more days to take. Patient reported she also gets Orencia infusions once a month. Patient stated she saw PCP on 1/29/2024 and PCP changed her medication for bladder leakage to Gemtesa x 1 month. Patient stated medication seems to be working but stated it is expensive. CM offered to submit a social worker referral to research resources to assist with cost of medication. Patient refused, stating since she in taking the medication only for 30 days to see if it works, she will wait. CM sent Ilumed brochure to patient\u00b4s email at clbailey9088@att.net if patient needed further assistance on the medication cost. CM instructed patient on taking medications as prescribed and signs and symptoms of UTI infections including, pain when urinating, frequency, urgency, and inability to start urinating. Patient stated understanding. CM also educated patient on the progression of UTI to the kidneys, including fever, chills, nausea, vomiting and back pain. Patient verbalized understanding. CM introduced long term case management services to patient. Patient declined long term case management at this time. Patient reported her next PCP appointment is in March 2024. Patient agreed to CM follow up call week of 2/12/2024.",
-            "created_date": "2024-02-06",
-            "reminder_date": "2024-02-06T10:59:49",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-380836",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "2/13/2024 Charzes Flowers, RN. CM called patient at 606-432-8969. Phone rang several times with no answer. CM called number again with same results. Next CM follow up call week of 2/19/2024",
-            "created_date": "2024-02-13",
-            "reminder_date": "2024-02-13T15:50:48",
-            "reminder_name": "Unable to Contact"
-          },
-          {
-            "id": "REM-386732",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "cflowers",
-            "description": "2/19/2024 Charzes Flowers, RN. CM called patient at 606-432-8969. CM re-introduced self as nurse case manager with ilumed, providing short term case management services for Dr. Suzanne Ford. Patient was alert, oriented, and answered questions appropriately.\nPatient denied new ER/hospital visit or changes to her medications since last CM call. Patient stated she is doing well but reported she cannot tell if the Gemtesa is helping that much. Patient stated she is not sure if she will continue with medication but will discuss with doctor. Patient stated Dr. Ford set up referral for patient to see Urologist on 2/26/2024. Patient also stated her next PCP appointment is in March 2024. Patient reported when she has a UTI, her symptoms are not the normal symptoms other people have. Patient stated her symptoms are almost like she is paralyzed, her legs cannot move. CM encouraged patient to watch for symptoms she usually experiences since patient has had multiple UTIs and notify PCP. Patient verbalized understanding. CM informed patient short term case management services ending and provided CM's contact number if patient needed further assistance. Patient verbalized understanding. CM will close STCM case at this time.",
-            "created_date": "2024-02-19",
-            "reminder_date": "2024-02-19T17:16:47",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          }
-        ],
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "23"
+        "encounter_status": "discharge"
       },
       {
         "id": 202309139816256931,
-        "pos": 21,
         "audit": {
           "mos": "Veronica Valencia",
           "mos_type": "adt",
@@ -10216,14 +9024,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 21,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": "Amy Ford RN, BSN"
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -10506,7 +9310,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -10518,122 +9321,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202309139816256931,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": [
-          {
-            "id": "REM-246615",
-            "source": "",
-            "status": "",
-            "category": "ADT ADMISSION",
-            "is_email": false,
-            "created_by": "vvalencia",
-            "description": "9/14/23 Veronica Valencia. Recv'd Census Notification. DOS 09/13/2023 @PIKEVILLE MEDICAL CENTER INC. Census MOS Action: Per operator @(606) 430-3500 Pikeville MC, PT is inhouse in Room#867. Spoke to PT, which confirmed that was admitted at the hospital where are running some tests and there is not an anticipated discharged date. Census MOS advised PT that we are under Dr. Ford assisting scheduling the 72Hours post discharge appt. PT stated that she has appt scheduled with Dr. Ford for a regular follow up at the end of this month and she agrees to notate that appt as a hospital follow up also. Census MOS also explained PT about ilumed STCM, CM & SW services as telehealth appts or home health visits if are there any concerns and listed out transportation and food delivery benefits after discharge. PT verified demo and provided her cellphone 606-213-5352. Census turned in contact information. PT verbalized understanding and thanked us. Census MOS will follow up with PCP office. VV",
-            "created_date": "2023-09-14",
-            "reminder_date": "2023-09-14T11:52:59",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-246708",
-            "source": "",
-            "status": "",
-            "category": "ADT ADMISSION",
-            "is_email": false,
-            "created_by": "ehiggins",
-            "description": "09/14/23: Ehiggins- CCM contacted Pikeville Medical Center Inc- and asked for the nursing station for room 867. CCM was transferred to Jena and asked for an assigned nurse for room 867. CCM was transferred, the phone rang, and voice mail answered.  CCM called the operator again and asked for CCM for room, 867 and was transferred to the VM for Caitlin.  CCM left a message asking for a return call. \n",
-            "created_date": "2023-09-14",
-            "reminder_date": "2023-09-14T12:27:52",
-            "reminder_name": "Called Facility - Spoke With"
-          },
-          {
-            "id": "REM-246816",
-            "source": "",
-            "status": "",
-            "category": "ADT ADMISSION",
-            "is_email": false,
-            "created_by": "ehiggins",
-            "description": "09/14/23: Ehiggins- CCM received a return call from Pikeville Medical Center Inc- CM Caitlin, she confirmed pt admission date of 9/13/23 and for general weakness and nausea.   Pt received an RA infusion yesterday and the temperature was at 102.4 as of 4pm.  The CM reported no recent procedures or consult pending, but the pt is being monitored. There is no anticipated d/c date or plans currently. CM Caitlin number is 606-430-8218 and RN CM is Natasha ex: 18212. CCM to follow-up as to treatment courses and d/c.       \n",
-            "created_date": "2023-09-14",
-            "reminder_date": "2023-09-14T13:03:45",
-            "reminder_name": "Called Facility - Spoke With"
-          },
-          {
-            "id": "REM-253862",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "aford",
-            "description": "09/21/2023 Amy Ford RN- CM spoke with patient and identified myself as an employee of Ilumed, doing case management for Dr Ford.  Patient was alert and oriented, answered questions appropriately.  She agreed to short term case management.  She stated that she was recently in the hospital due to an UTI and increased temperature.  She stated that while there, they ran several test and can not figure out what is causing her UTI.  She now has an appointment with a neurologist.  I did not find out the appointment date or time.  The patient does have a follow up appointment for 09/26/2023 with her PCP.  She does not want a earlier time or date for this appointment.  Educated patient of signs and symptoms of UTI and alerting the PCP when they begin.  The patient verbalized understanding.  The patient currently lives along, but have family and friends who live nearby.  She is able to manage her own medications and is very knowledgeable in what she takes.  She is able to complete ADLS without assistance.  She agreed to CM follow up week of 09/24/2023.  ",
-            "created_date": "2023-09-21",
-            "reminder_date": "2023-09-21T15:56:24",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-259580",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "aford",
-            "description": "09/28/2023 Amy Ford RN- CM spoke with patient who was alert and oriented, answered questions appropriately.  She has not had any ER visits or hospitalizations since our last conversation.  She stated that she went to her PCP on 09/26/2023.  While at the PCP the tested her urine to make sure she had gotten over the UTI.  She stated that they called today and have prescribed her more antibiotics due to still having bacteria in her urine.  She is unsure of the antibiotic name due to she has no gone to get them yet.  I educated patient on increased chances of yeast infection and thrush in her mouth with prolonged use of antibiotics.  I explained to the patient signs and symptoms at that time.  The patient stated that she is starting to show signs of a yeast infection.  She stated that she is starting to itch and have discomfort in her \"private area.\"  I will call Dr Ford's office and make them aware of patient's discomfort.  The patient stated that she will wait to go to the pharmacy in hopes that the PCP will call her something in.  I also educated patient on eating yogurt and importance of pro biotics.  She voice understanding.  The patient continues to live alone.  She has family who live nearby.  She is able to manage her medications and complete ADLS without assistance.  She agreed to CM follow up week of 10/01/2023.  ",
-            "created_date": "2023-09-28",
-            "reminder_date": "2023-09-28T11:37:36",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-259584",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "aford",
-            "description": "09/28/2023 Amy Ford RN- CM called PCP office and left message on nurse voicemail making them aware of patient's symptoms of yeast infection.  I left the patient's contact number and my contact number.  ",
-            "created_date": "2023-09-28",
-            "reminder_date": "2023-09-28T11:38:49",
-            "reminder_name": "Called Facility - Spoke With"
-          },
-          {
-            "id": "REM-265097",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "aford",
-            "description": "10/04/2023 Amy Ford RN- CM spoke with patient who was alert and oriented, answered questions appropriately.  She has not had any new ER visits or hospitalizations since out last conversation.  She stated that she took her last antibiotic today.  Her PCP did call in her some Diflucan for her yeast infection and she is to take her last pill tomorrow.  She stated that she is feeling much better.  I educated the patient on importance of following up with PCP to assess if her UTI has completely resolved, due to her next check up is not until 12/19/2023. I also reviewed signs and symptom s of UTI with the patient, who voiced understanding.  The patient continues to live alone with family and friends who live near.  She considers them her lifelines.  She is able to manage her medications and complete ADLS without assistance.  The patient agreed to CM follow up week of 10/04/2023.  ",
-            "created_date": "2023-10-04",
-            "reminder_date": "2023-10-04T13:08:49",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-273434",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "crodgers",
-            "description": "10/12/2023 Cassandra Rodgers RN:  CM attempted to call patient at (606 432-8969).  No answer, CM left detailed message for patient asking for call back and notifying her that I am a nurse case manager with ilumed doing case management for Dr. Ford.  STCM set to be completed 10/13/2023.  No additional follow up scheduled at this time for STCM.   ",
-            "created_date": "2023-10-12",
-            "reminder_date": "2023-10-12T14:58:11",
-            "reminder_name": "Left message"
-          }
-        ],
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "21"
+        "encounter_status": "discharge"
       },
       {
         "id": 202306029814952226,
-        "pos": 23,
         "audit": {
           "mos": "Kendra Perkins",
           "mos_type": "adt",
@@ -10667,14 +9363,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 23,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": "Amy Ford RN, BSN"
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -10717,7 +9409,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -10729,74 +9420,15 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202306029814952226,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": [
-          {
-            "id": "REM-153744",
-            "source": "",
-            "status": "",
-            "category": "ADT DISCHARGE",
-            "is_email": false,
-            "created_by": "",
-            "description": "Kendra Perkins 06/02: Per ADT, patient was admitted to Pikeville Medical Center on 06/02/2023 for low back pain. Patient was discharged on 06/02/2023. I was able to call and speak to patient today on phone number 606-432-8969. Patient reports she had got up during the night to use the restroom and fell and had to call 911 and they took her to the hospital. Patient reports everything checked out okay and they sent her home. She reports that she feels some better this afternoon but is still having trouble with balance. She reports that she reached out to PCP office today and they were not in office this afternoon but will call her back with a follow up appointment for next week. I will check in with patient Monday to make sure she got an appointment scheduled with PCP.",
-            "created_date": "2023-06-02",
-            "reminder_date": "2023-06-02T15:58:38",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-154286",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "",
-            "description": "06/05/2023 Amy Ford RN-CM spoke with patient who was alert and oriented, answered questions appropriately.  She agreed to telephonic short term case management.  She stated that that she went to the ER due to a fall and hurting her back.  She did not have any injuries but is having trouble with dizziness and balance.  She stated that recently had a stomach virus.  I educated on possible dehydration and need to increase fluids, due to dizziness and loss of balance is a sign of dehydration.  Patient stated that she is drinking water and ginger ale due to she does not like sports drinks.  I called PCP office and got patient a follow up appointment for today.  She stated that after her appointment, she plans to go stay with her sister who can help her until she starts feeling better.  Patient lives alone.  Patient is able to manage her medications.  I did not get to discuss each medication with the patient during our conversation.  She uses a walker and currently is needing assistance with ADLS due to her dizziness and balance issues.  This is part of the reason that she will be visiting her sister until next week.  Patient agreed to CM follow up next week.  ",
-            "created_date": "2023-06-05",
-            "reminder_date": "2023-06-05T16:18:08",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-154337",
-            "source": "",
-            "status": "",
-            "category": "ADT DISCHARGE",
-            "is_email": false,
-            "created_by": "",
-            "description": "Kendra Perkins 06/05: I was able to call and speak with patient today on phone number 606-432-8969 and follow up on hospital follow up appointment. Patient reports she still is having trouble with her balance. Patient was able to get a hospital follow up appointment with her PCP for today 06/05/2023 @ 3:30 pm. Patient aware of date and time of appointment and will follow up with PCP.",
-            "created_date": "2023-06-05",
-            "reminder_date": "2023-06-05T12:10:14",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          },
-          {
-            "id": "REM-172227",
-            "source": "",
-            "status": "",
-            "category": "RNCC",
-            "is_email": false,
-            "created_by": "",
-            "description": "06/27/2023 Amy Ford RN-Case manager spoke with patient who was alert and oriented, answered questions appropriately. Patient has had no hospitalizations or ER visits since our last conversation. She states that she is continuing out patient physical therapy currently. She states that her balance has gotten better, and she is no longer walking with an assistive device.  She denies any falls since our last conversation. Patient states that she has an appointment with Dr Ford next week.  She is not on any new medications and continues to manage her medications without assistance. She also able to complete ADLS independently, which is an improvement from when she came home from hospital.  Patient continues to live alone but has the support of her family and friends, particularly her sister. Patient had company while I was on the phone with her, therefore she made our conversation very short. Case manager did not get to educate patient on disease processes today. Case manager will continue education at next conversation. Patients last day of episode is 07/02/2023.  Patient is aware of upcoming discharge from short term case management.",
-            "created_date": "2023-06-27",
-            "reminder_date": "2023-06-27T12:56:11",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          }
-        ],
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "23"
+        "encounter_status": "discharge"
       },
       {
         "id": 202303239814393247,
-        "pos": 23,
         "audit": {
           "mos": "Kendra Perkins",
           "mos_type": "adt",
@@ -10830,14 +9462,10 @@
           "oscar_num": null,
           "hospital_nr": 10013375
         },
-        "pos_curr": 23,
         "provider": {
-          "dce_group": "UMG",
-          "dce_provider": "FORD SUZANNE",
           "attending_npi": null,
           "attending_name": "FORD SUZANNE",
-          "attending_taxonomy": "282N00000X",
-          "care_status_personnel": "Amy Ford RN, BSN"
+          "attending_taxonomy": "282N00000X"
         },
         "admission": {
           "purpose": null,
@@ -10865,7 +9493,6 @@
           }
         ],
         "discharge": {
-          "care_status": "Pending",
           "disposition": "",
           "readmit_30d": false,
           "tfu_enabled": false,
@@ -10877,34 +9504,12 @@
           "readmit_rate_pct": 0.0,
           "discharge_to_code": null
         },
-        "documents": null,
-        "transport": null,
-        "care_plans": null,
         "procedures": null,
         "enc_class_nr": 4,
         "encounter_nr": 202303239814393247,
-        "home_program": null,
-        "claim_ref_num": null,
-        "source_system": "adt",
-        "communications": [
-          {
-            "id": "REM-101688",
-            "source": "",
-            "status": "",
-            "category": "ADT DISCHARGE",
-            "is_email": false,
-            "created_by": "",
-            "description": "Per ADT, patient was seen at Pikeville Medical Center on 03/23/2023 and discharged home on 03/23/2023. I called 606-432-8969 and spoke with patient today and she reports she is doing better. She reports she fell at home on her steps Wednesday and went to local ER yesterday to be seen. She reports they done x-rays and checked it out and gave her some pain medicine for home and she is doing well. She reports that she has been using a walker at home to help her get around. I offered patient a follow up appointment to see Dr. Ford in office and she declined appointment. She reports the ER told her that she didn't need a follow up with PCP and she had one scheduled with Dr. Ford the first part of April anyways and she said she would just keep that one. Will forward on to case management today due to patient refusing follow up appointment. ",
-            "created_date": "2023-03-24",
-            "reminder_date": "2023-03-24T15:09:52",
-            "reminder_name": "Called Patient/Family - Spoke With"
-          }
-        ],
-        "encounter_type": "01",
+        "encounter_type": "adt",
         "enc_medications": null,
-        "risk_screenings": null,
-        "encounter_status": "discharge",
-        "place_of_service": "23"
+        "encounter_status": "discharge"
       }
     ],
     "enrollment": {
@@ -10937,7 +9542,10 @@
       "care_plan_active": false,
       "uamcc_conditions": null,
       "pcp_visit_overdue": true,
-      "hedis_gap_measures": ["Osteoporosis Screening", "Controlling High BP"],
+      "hedis_gap_measures": [
+        "Osteoporosis Screening",
+        "Controlling High BP"
+      ],
       "ccm_consent_on_file": false,
       "last_admission_date": "2025-12-04",
       "last_discharge_date": "2025-12-02",

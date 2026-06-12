@@ -58,17 +58,16 @@ The primary use case is a **clinical rules engine**: a measure definition (e.g.,
 ### ES Document Identity
 
 ```
-ES index   : patients
-ES _id     : patient.id  (= origid = CDC primary key)
-CDC key    : patient.id / patient.origid
-account_id : universal cross-section correlation key (joins across sub-arrays)
+ES index : patients
+ES _id   : patient.id  (= origid = CDC primary key)
+CDC key  : patient.id / patient.origid
 ```
 
 ### Top-Level Patient Structure
 
 ```
 patient
-├── id / origid / account_id / mbi
+├── id / origid
 ├── demographics          ← age, dob, sex, race, language
 ├── contact               ← address, phone, email, emergency_contact
 ├── care_team             ← dce_provider, dce_group, care_manager, market
@@ -76,15 +75,14 @@ patient
 ├── rule_flags{}          ← PRE-COMPUTED summary — rule engines read this FIRST
 ├── chronic_conditions[]  ← icd_code, hcc_number, status, last_seen_date
 ├── encounters[]          ← spine — all clinical events; each embeds:
+│   ├── provider{}        ← attending_name, attending_npi, attending_taxonomy
+│   ├── admission{}       ← point_of_origin, admit_type_cd, confirmed_mra, high_utilizer
+│   ├── discharge{}       ← disposition, discharge_to_code, readmit_30d, tfu_enabled, tcm_*
 │   ├── diagnoses[]       ← icd_code (from adt_encounter_icd_codes)
 │   ├── procedures[]      ← billing_code (from mra1_encounter_bill_cpts)
-│   ├── risk_screenings[]
 │   ├── enc_medications[]
-│   ├── transport{}
-│   ├── home_program{}
-│   ├── care_plans[]
-│   ├── communications[]
-│   └── documents[]
+│   ├── audit{}           ← audit_status, mos, tfu_numerator, mif_exclusion
+│   └── claim{}           ← clm_uniq_id, clm_amt_paid, rndrg_prvdr_npi
 ├── medications[]         ← patient-level (drfirst), not encounter-linked
 ├── labs[]                ← cpoe_result / cpoe_result_values
 ├── alerts[]              ← mra_scorecard_alerts
@@ -139,6 +137,8 @@ A measure file (`hypertension_measure 1.json` pattern) declares `dataElements[]`
 
 | MySQL Table | JSON Path | ES Field Type |
 |-------------|-----------|---------------|
+| `dc_bene_alignment_rostr_m01` | `patient.care_team.*` | flat keyword/integer |
+| `cds_patient_personell_assocs` → `personell` | `patient.care_team.care_manager` | keyword |
 | `adt_patient` | `patient.demographics.*` | flat keyword/integer |
 | `adt_encounter_icd_codes` | `patient.encounters[].diagnoses[].icd_code` | nested keyword |
 | `chronic_disease_*` (problem list) | `patient.chronic_conditions[].icd_code` | nested keyword |
@@ -176,7 +176,6 @@ patient.chronic_conditions         (nested)
 patient.encounters                 (nested)
 patient.encounters.diagnoses       (nested)
 patient.encounters.procedures      (nested)
-patient.encounters.risk_screenings (nested)
 patient.encounters.enc_medications (nested)
 patient.alerts                     (nested)
 patient.medications                (nested)
@@ -360,7 +359,6 @@ Key points:
 
 - **Document replace, not partial update** — always rebuild and replace the full document on CDC events.
 - **`origid` is the canonical patient key** — use it as the ES `_id`, the CDC key, and the SP input parameter.
-- **`account_id` is the correlation key** — use it to join across sub-arrays when sub-array items lack `origid`.
 - **ICD/CPT codes are `keyword` type** — never analyze them; always use `term`/`terms` queries.
 - **Nested paths need nested queries** — never use a `term` query directly on a field inside a `nested` object.
 - **`rule_flags` is the fast lane** — pre-compute any boolean/scalar a rule engine will filter on frequently.

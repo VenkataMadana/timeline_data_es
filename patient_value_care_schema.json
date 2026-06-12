@@ -17,10 +17,8 @@
 
   "patient": {
 
-    "id":         "A01AKXCZMCX",
-    "account_id": "MBI-A01AKXCZMCX",
-    "origid":     "A01AKXCZMCX",
-    "mbi":        "1EG4-TE5-MK72",
+    "id":     "A01AKXCZMCX",
+    "origid": "A01AKXCZMCX",
 
     "demographics": {
       "last_name":    "Smith",
@@ -61,21 +59,19 @@
     },
 
     "care_team": {
-      "dce_provider":       "Dr. Maria Lopez",
-      "dce_provider_npi":   "1234567890",
-      "dce_group":          "Metro Health Clinic",
-      "dce_group_id":       4201,
-      "primary_doctor":     "Dr. Robert Jones",
-      "primary_doctor_npi": "0987654321",
-      "care_manager":       "Jane Doe RN",
-      "last_pcp_visit":     "2025-03-22",
-      "next_pcp_visit":     "2025-09-22",
-      "days_since_pcp_visit": 74,
-      "market_id":          5,
-      "market_name":        "South Florida",
-      "facility_name":      "Metro Health Clinic",
-      "facility_nr":        2001,
-      "member_type":        "Medicare"
+      "market_id":            5,
+      "market_name":          "South Florida",
+      "group_name":           "Metro Health Clinic",
+      "sub_group_name":       null,
+      "subgroup_id":          0,
+      "facility_nr":          2001,
+      "facility_name":        "Metro Health Clinic",
+      "dce_provider":         "Dr. Maria Lopez",
+      "dce_provider_npi":     "1234567890",
+      "care_manager":         "Jane Doe RN",
+      "last_pcp_visit":       "2025-03-22",
+      "next_pcp_visit":       "2025-09-22",
+      "days_since_pcp_visit": 74
     },
 
     "enrollment": {
@@ -314,15 +310,9 @@
       {
         "id":              9910234,
         "encounter_nr":    9910234,
-        "claim_ref_num":   "CLM-2025-001",
-        "source_system":   "adt",
+        "encounter_type":  "adt",
         "enc_class_nr":    4,
-        "encounter_type":  "Inpatient",
         "encounter_status":"closed",
-        "setting":         "Acute Hospital",
-        "pos":             21,
-        "pos_curr":        21,
-        "place_of_service":"Inpatient Hospital",
 
         "dates": {
           "admission_date":      "2025-02-14",
@@ -344,12 +334,9 @@
         },
 
         "provider": {
-          "attending_name":        "Dr. Anna Chen",
-          "attending_npi":         "1122334455",
-          "attending_taxonomy":    "208D00000X",
-          "dce_provider":          "Dr. Maria Lopez",
-          "dce_group":             "Metro Health Clinic",
-          "care_status_personnel": "Jane Doe RN"
+          "attending_name":     "Dr. Anna Chen",
+          "attending_npi":      "1122334455",
+          "attending_taxonomy": "208D00000X"
         },
 
         "admission": {
@@ -368,7 +355,6 @@
           "readmit_30d":       false,
           "readmit_er_30d":    false,
           "readmit_rate_pct":  0.0,
-          "care_status":       "Active",
           "tfu_enabled":       true,
           "followup_days":     14,
           "acr_numerator":     1,
@@ -451,20 +437,6 @@
           }
         ],
 
-        "risk_screenings": [
-          {
-            "id":                6610,
-            "sub_type":          "SDOH",
-            "code_desc":         "Food insecurity screening",
-            "comments":          "Patient reports occasional food shortage",
-            "result_value_desc": "Positive",
-            "result_flag":       "ActionRequired",
-            "start_date":        "2025-02-14",
-            "end_date":          "2025-02-14",
-            "provider_nr":       112
-          }
-        ],
-
         "enc_medications": [
           {
             "id":               991023401,
@@ -482,95 +454,6 @@
           }
         ],
 
-        "transport": [
-          {
-            "id":              7701,
-            "date":            "2025-02-14",
-            "mode":            "Rideshare",
-            "eligible_rides":  12,
-            "rides_used":      1,
-            "cost":            18.50,
-            "company":         "Lyft Health",
-            "pickup_address":  "123 Main St, Miami FL 33101",
-            "dropoff_address": "Regional Medical Center, Miami FL",
-            "map_data_status": "verified",
-            "notes":           "On time"
-          }
-        ],
-
-        "home_program": [
-          {
-            "id":                     3322,
-            "date_request":           "2025-02-18",
-            "date_of_appoint":        "2025-02-19",
-            "discharg_date":          "2025-02-20",
-            "status":                 "Completed",
-            "appointment_type":       "Home Visit",
-            "program_vendor":         "CareMore Health",
-            "received_visit_summary": true,
-            "notes":                  "Patient stable, follow-up in 2 weeks"
-          }
-        ],
-
-        "documents": [
-          {
-            "id":             8800,
-            "source":         "adt",
-            "pdf_path":       "/adt/records/9910234.pdf",
-            "created_date":   "2025-02-16",
-            "follow_up_date": "2025-02-16",
-            "queue_status":   null
-          }
-        ],
-
-        "care_plans": [
-          {
-            "id":                       7812,
-            "encounter_nr_terminating": null,
-            "plan_name":                "Diabetes Management",
-            "guideline_title":          "Diabetes Management",
-            "guideline_nr":             15,
-            "guideline_edition":        "2024",
-            "hsim":                     "DM-001",
-            "source":                   "MCG",
-            "status":                   "Active",
-            "created_date":             "2025-01-05",
-            "plan_start_date":          "2025-01-05",
-            "inactive_date":            "2025-12-31",
-            "assigned_cm":              "CM001",
-            "reassessment_days":        90,
-            "next_reassessment_date":   "2025-04-05",
-            "reassessment_overdue":     false,
-            "progress": {
-              "interventions": { "achieved": 3, "total": 5, "pct": 60 },
-              "barriers":      { "achieved": 1, "total": 2, "pct": 50 },
-              "goals":         { "achieved": 1, "total": 3, "pct": 33 }
-            },
-            "clinical_content": {
-              "risk_factors": "Obesity, Sedentary lifestyle",
-              "barriers":     "Transportation",
-              "goals":        "Reduce HbA1c below 7%",
-              "treatment":    "Lifestyle modification + Metformin"
-            }
-          }
-        ],
-
-        "communications": [
-          {
-            "id":            "REM-4421",
-            "reminder_name": "Post-discharge follow-up call",
-            "description":   "Check on patient after inpatient stay",
-            "category":      "Post-Discharge",
-            "reminder_date": "2025-02-18T09:00:00",
-            "created_date":  "2025-02-17",
-            "created_by":    "jsmith",
-            "status":        "Sent",
-            "read_status":   "read",
-            "source":        "CM",
-            "is_email":      false
-          }
-        ],
-
         "audit": {
           "care_status":   "Active",
           "audit_status":  "not_audit",
@@ -585,15 +468,9 @@
       {
         "id":              7723001,
         "encounter_nr":    7723001,
-        "claim_ref_num":   "CLM-2025-002",
-        "source_system":   "mra1",
+        "encounter_type":  "mra1",
         "enc_class_nr":    10,
-        "encounter_type":  "Office Visit",
         "encounter_status":"closed",
-        "setting":         "Part B",
-        "pos":             11,
-        "pos_curr":        11,
-        "place_of_service":"Office",
 
         "dates": {
           "admission_date":      "2025-03-22",
@@ -653,13 +530,7 @@
           }
         ],
 
-        "risk_screenings": [],
         "enc_medications": [],
-        "transport":       [],
-        "home_program":    [],
-        "documents":       [],
-        "care_plans":      [],
-        "communications":  [],
 
         "audit": {
           "care_status":   "Active",

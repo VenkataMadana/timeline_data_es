@@ -8,8 +8,8 @@
 -- Design:
 --   • One document per patient, full history
 --   • account_id = universal cross-section correlation key
---   • Encounters are the spine — diagnoses, procedures, screenings, enc_meds,
---     transport, home_program, documents, care_plans, communications embedded
+--   • Encounters are the spine — diagnoses, procedures, enc_medications,
+--     audit, and claim embedded
 --   • Labs and patient medications are top-level arrays (independent of encounter)
 --   • rule_flags{} pre-computed — rule engines read this first without traversing
 --   • CDC strategy: ES ReplaceOne on {patient.id} = p_origid
@@ -38,9 +38,7 @@ sp_get_patient_es_doc: BEGIN
 
       -- ─ identity ──────────────────────────────────────────────────────────
       'id',         p.origid,
-      'account_id', COALESCE(p.account_id, ''),
       'origid',     p.origid,
-      'mbi',        p.mra_clm_refer_m01,
 
       -- ─ demographics ──────────────────────────────────────────────────────
       'demographics', JSON_OBJECT(
@@ -82,29 +80,32 @@ sp_get_patient_es_doc: BEGIN
         )
       ),
 
-      -- ─ care_team ─────────────────────────────────────────────────────────
-      'care_team', JSON_OBJECT(
-        'dce_provider',        p.sp_dr_1,
-        'dce_provider_npi',    p.dce_prov_npi_nr,
-        'dce_group',           p.facility_name,
-        'dce_group_id',        p.facility_nr,
-        'primary_doctor',      p.primary_doctor,
-        'care_manager',        (SELECT ae.care_status_personnel
-                                 FROM adt_encounter ae
-                                 WHERE ae.origid = p.origid
-                                   AND ae.care_status_personnel IS NOT NULL
-                                 ORDER BY ae.encounter_date DESC LIMIT 1),
-        'last_pcp_visit',      DATE_FORMAT(p.Last_PCP_Visit_Date, '%Y-%m-%d'),
-        'next_pcp_visit',      DATE_FORMAT(p.Next_Office_Visit, '%Y-%m-%d'),
-        'days_since_pcp_visit',DATEDIFF(CURDATE(), p.Last_PCP_Visit_Date),
-        'market_id',           (SELECT ae.market_id
-                                 FROM adt_encounter ae WHERE ae.origid = p.origid
-                                 ORDER BY ae.encounter_date DESC LIMIT 1),
-        'market_name',         (SELECT ae.market_name
-                                 FROM adt_encounter ae WHERE ae.origid = p.origid
-                                 ORDER BY ae.encounter_date DESC LIMIT 1),
-        'facility_name',       p.facility_name,
-        'facility_nr',         p.facility_nr
+      -- ─ care_team — sourced from dc_bene_alignment_rostr_m01 (latest row) ──
+      'care_team', (
+        SELECT JSON_OBJECT(
+          'market_id',           r.market_id,
+          'market_name',         r.market_names,
+          'group_name',          r.dce_group_name,
+          'sub_group_name',      r.dce_sub_group_name,
+          'subgroup_id',         r.dce_sub_group_nr,
+          'facility_nr',         r.dce_group_nr,
+          'facility_name',       r.dce_group_name,
+          'dce_provider',        r.dce_provider_name,
+          'dce_provider_npi',    r.prov_npi_nr,
+          'care_manager',        (SELECT per.name
+                                   FROM cds_patient_personell_assocs cpa
+                                   JOIN personell per ON per.nr = cpa.personell_id
+                                   WHERE cpa.origid = p_origid
+                                   ORDER BY cpa.created_date DESC LIMIT 1),
+          'last_pcp_visit',      DATE_FORMAT(r.Last_PCP_Visit_Date, '%Y-%m-%d'),
+          'next_pcp_visit',      DATE_FORMAT(p.Next_Office_Visit, '%Y-%m-%d'),
+          'days_since_pcp_visit',DATEDIFF(CURDATE(), r.Last_PCP_Visit_Date)
+        )
+        FROM dc_bene_alignment_rostr_m01 r
+        WHERE r.mm_curr_mbi_id = p.mra_clm_refer_m01
+          AND r.ALIGN_STATUS_CODE IN ('AL','D1Y')
+        ORDER BY r.mm_date DESC
+        LIMIT 1
       ),
 
       -- ─ enrollment ────────────────────────────────────────────────────────
@@ -522,14 +523,9 @@ sp_get_patient_es_doc: BEGIN
           JSON_OBJECT(
             'id',              ae.encounter_nr,
             'encounter_nr',    ae.encounter_nr,
-            'claim_ref_num',   ae.CUR_CLM_UNIQ_ID,
-            'source_system',   ae.mos_type,
+            'encounter_type',  ae.mos_type,
             'enc_class_nr',    ae.encounter_class_nr,
-            'encounter_type',  ae.encounter_type,
             'encounter_status',ae.encounter_status,
-            'pos',             ae.pos,
-            'pos_curr',        ae.pos_curr,
-            'place_of_service',ae.place_of_service,
 
             'dates', JSON_OBJECT(
               'admission_date',      DATE_FORMAT(ae.encounter_date, '%Y-%m-%d'),
@@ -552,12 +548,9 @@ sp_get_patient_es_doc: BEGIN
             ),
 
             'provider', JSON_OBJECT(
-              'attending_name',        ae.dce_provider_name,
-              'attending_npi',         ae.ATNDG_PRVDR_NPI_NUM,
-              'attending_taxonomy',    ae.taxonomy,
-              'dce_provider',          ae.dce_provider_name,
-              'dce_group',             ae.dce_group_name,
-              'care_status_personnel', ae.care_status_personnel
+              'attending_name',     ae.dce_provider_name,
+              'attending_npi',      ae.ATNDG_PRVDR_NPI_NUM,
+              'attending_taxonomy', ae.taxonomy
             ),
 
             'admission', JSON_OBJECT(
@@ -579,7 +572,6 @@ sp_get_patient_es_doc: BEGIN
               'readmit_er_30d',    IF(ae.readmit_er_status = 1,
                                       CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
               'readmit_rate_pct',  ae.readmit_rate_percentile,
-              'care_status',       ae.care_status,
               'tfu_enabled',       IF(ae.tfu_enabled = 1,
                                       CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
               'followup_days',     ae.followup_days,
@@ -642,26 +634,6 @@ sp_get_patient_es_doc: BEGIN
               WHERE cpt.encounter_nr = ae.encounter_nr
             ),
 
-            -- risk screenings embedded in encounter
-            'risk_screenings', (
-              SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'id',                era.nr,
-                  'sub_type',          era.sub_type,
-                  'code_desc',         era.code_desc,
-                  'comments',          era.comments,
-                  'result_value_desc', era.result_value_desc,
-                  'result_code',       era.result_code,
-                  'result_code_desc',  era.result_code_desc,
-                  'start_date',        DATE_FORMAT(era.start_date, '%Y-%m-%d'),
-                  'end_date',          DATE_FORMAT(era.end_date, '%Y-%m-%d'),
-                  'provider_nr',       era.provider_nr
-                )
-              )
-              FROM encounter_risk_assesments era
-              WHERE era.encounter_nr = ae.encounter_nr
-            ),
-
             -- encounter medications (admission meds)
             'enc_medications', (
               SELECT JSON_ARRAYAGG(
@@ -684,120 +656,6 @@ sp_get_patient_es_doc: BEGIN
               WHERE dm.patientid = p_origid
                 AND dm.admission = 'yes'
                 AND DATE(dm.start_date) = DATE(ae.encounter_date)
-            ),
-
-            -- transport linked to encounter
-            'transport', (
-              SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'id',              tb.nr,
-                  'date',            DATE_FORMAT(tb.date, '%Y-%m-%d'),
-                  'mode',            tb.mode,
-                  'eligible_rides',  tb.eligible_rides,
-                  'cost',            tb.cost_of_the_ride,
-                  'company',         tb.transportation_company,
-                  'pickup_address',  tb.pickup_address,
-                  'dropoff_address', tb.dropoff_address,
-                  'notes',           tb.notes
-                )
-              )
-              FROM transportation_benefit tb
-              WHERE tb.encounter_nr = ae.encounter_nr
-            ),
-
-            -- in-home program linked to encounter
-            'home_program', (
-              SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'id',                     ihp.nr,
-                  'date_request',           DATE_FORMAT(ihp.date_request, '%Y-%m-%d'),
-                  'date_of_appoint',        DATE_FORMAT(ihp.date_of_appoint, '%Y-%m-%d'),
-                  'discharg_date',          DATE_FORMAT(ihp.discharg_date, '%Y-%m-%d'),
-                  'status',                 ihp.status,
-                  'appointment_type',       ihp.appointment_type,
-                  'program_vendor',         ihp.program_vendor,
-                  'received_visit_summary', IF(ihp.recieved_visit_summary IS NOT NULL,
-                                               CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-                  'notes',                  ihp.notes
-                )
-              )
-              FROM in_home_patient_program ihp
-              WHERE ihp.encounter_nr = ae.encounter_nr
-            ),
-
-            -- documents from chart queue
-            'documents', (
-              SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'id',             mcq.nr,
-                  'source',         mcq.source,
-                  'pdf_path',       mcq.pdf_file_path,
-                  'created_date',   DATE_FORMAT(mcq.create_time, '%Y-%m-%d'),
-                  'follow_up_date', DATE_FORMAT(mcq.follow_up_date, '%Y-%m-%d'),
-                  'queue_status',   mcq.queue_status
-                )
-              )
-              FROM mra_chart_queue mcq
-              WHERE mcq.encounter_nr = ae.encounter_nr
-            ),
-
-            -- care plans opened on this encounter
-            'care_plans', (
-              SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'id',                       cpp.id,
-                  'encounter_nr_terminating', cpp.encounter_nr_terminating,
-                  'plan_name',                cp.careplan_name,
-                  'guideline_nr',             cpp.cp_id,
-                  'source',                   COALESCE(cpp.source, 'MCG'),
-                  'status',                   IF(cpp.plan_status = 1, 'Active', 'Inactive'),
-                  'created_date',             DATE_FORMAT(cpp.created_date, '%Y-%m-%d'),
-                  'plan_start_date',          DATE_FORMAT(cpp.plan_start_date, '%Y-%m-%d'),
-                  'inactive_date',            DATE_FORMAT(cpp.plan_inactive_datetime, '%Y-%m-%d'),
-                  'assigned_cm',              cpp.assign_pers,
-                  'reassessment_days',        CAST(COALESCE(cpp.reassessment, '90') AS UNSIGNED),
-                  'next_reassessment_date',   DATE_FORMAT(
-                                                DATE_ADD(COALESCE(cpp.updated_date, cpp.plan_start_date),
-                                                         INTERVAL CAST(COALESCE(cpp.reassessment,'90') AS UNSIGNED) DAY),
-                                                '%Y-%m-%d'),
-                  'reassessment_overdue',     IF(
-                                                DATE_ADD(COALESCE(cpp.updated_date, cpp.plan_start_date),
-                                                         INTERVAL CAST(COALESCE(cpp.reassessment,'90') AS UNSIGNED) DAY)
-                                                < CURDATE(),
-                                                CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-                  'clinical_content', JSON_OBJECT(
-                    'risk_factors', cpp.plan_riskfactor,
-                    'barriers',     cpp.plan_barriers,
-                    'goals',        cpp.plan_goals,
-                    'treatment',    cpp.plan_treatment
-                  )
-                )
-              )
-              FROM care_plan_patient cpp
-              LEFT JOIN care_plan cp ON cp.careplan_id = cpp.cp_id
-              WHERE cpp.origid = p_origid
-                AND cpp.encounter_nr_origin = ae.encounter_nr
-            ),
-
-            -- communications / reminders tied to encounter
-            'communications', (
-              SELECT JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'id',            CONCAT('REM-', re.reminder_id),
-                  'reminder_name', re.reminder_name,
-                  'description',   re.reminder_des,
-                  'category',      re.category,
-                  'reminder_date', DATE_FORMAT(re.reminder_date, '%Y-%m-%dT%H:%i:%s'),
-                  'created_date',  DATE_FORMAT(re.created_date, '%Y-%m-%d'),
-                  'created_by',    re.created_by,
-                  'status',        re.reminder_status,
-                  'source',        re.reminder_source,
-                  'is_email',      IF(re.reminder_isemail = 1,
-                                      CAST(TRUE AS JSON), CAST(FALSE AS JSON))
-                )
-              )
-              FROM reminder_events re
-              WHERE re.encounter_nr = ae.encounter_nr
             ),
 
             -- audit fields
