@@ -81,12 +81,12 @@
   "mra1_encounter": {
     "patient_id_col": "patient_id",
     "change_date_col": "enc_admit_date",
-    "procedures": ["sp_load_patients_visits_v2", "sp_load_outpatients_json_v2"]
+    "procedures": ["sp_get_patient_es_doc", "sp_load_patients_visits_v2", "sp_load_outpatients_json_v2"]
   },
   "adt_encounter": {
     "patient_id_col": "origid",
     "change_date_col": "encounter_date",
-    "procedures": ["sp_load_patients_visits_v2", "sp_load_hie_feed_json_v2", "sp_load_medical_records_json_v2"]
+    "procedures": ["sp_get_patient_es_doc", "sp_load_patients_visits_v2", "sp_load_hie_feed_json_v2", "sp_load_medical_records_json_v2"]
   },
   "flowsheet_save_data": {
     "patient_id_col": "orig_id",
