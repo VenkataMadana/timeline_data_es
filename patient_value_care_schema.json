@@ -7,10 +7,10 @@
     "Rules operate on flat paths — e.g. patient.risk_summary.uha_percentile >= 80 triggers High-Risk outreach.",
     "patient.rule_flags{} is a pre-computed boolean/numeric summary refreshed on every CDC update.",
     "   Rule engines read rule_flags first; they traverse sub-arrays only for detail/audit.",
-    "Encounter-linked events are embedded: diagnoses, procedures, screenings, meds, transport,",
+    "Encounter-linked events are embedded: diagnoses, procedures, screenings, meds,",
     "   home_program, care_plans, communications, documents — all inside encounters[].",
     "Patient-level chronic data has NO encounter_nr in MySQL: medications, assessments, labs,",
-    "   alerts, sdoh, emr_appointments, hedis_measures, raf_profile, risk_scores, uamcc.",
+    "   alerts, sdoh, transport_benefits, emr_appointments, hedis_measures, raf_profile, risk_scores, uamcc.",
     "CDC update strategy: ReplaceOne on {patient.id} — full document replace every time.",
     "   Sub-array items use their id (source MySQL PK) for idempotent re-inserts."
   ],
@@ -438,20 +438,7 @@
         ],
 
         "enc_medications": [
-          {
-            "id":               991023401,
-            "ndc_id":           "57664037718",
-            "rxnorm_id":        "861007",
-            "medication_name":  "Metformin 500mg",
-            "dose":             "500",
-            "dose_unit":        "mg",
-            "route":            "Oral",
-            "schedule":         "BID",
-            "start_date":       "2025-02-14",
-            "stop_date":        "2025-02-16",
-            "prescribed_doctor":"Dr. Anna Chen",
-            "delete_status":    "n"
-          }
+          { "rxnorm_id": "861007" }
         ],
 
         "audit": {
@@ -502,6 +489,50 @@
           "clm_uniq_id":  "CMS-2025-7723001",
           "clm_amt_paid": 185.00
         },
+
+        "admit_time":                  "09:30:00",
+        "discharge_time":              "14:15:00",
+        "group_type":                  "DCE",
+        "sub_group_type":              "Standard",
+        "market_id":                   2,
+        "market_name":                 "South Florida",
+        "facility_id":                 301,
+        "facility_sub_id":             null,
+        "provider_id":                 "1234567890",
+        "facility_name":               "Metro Health Clinic",
+        "facility_sub_name":           null,
+        "primary_physician":           "Dr. Robert Jones",
+        "aligned_status":              "Aligned",
+        "secondary_aligned_status":    null,
+        "mh1_calculated_amount":       1250.00,
+        "mc1_calculated_amount":       980.00,
+        "is_reference_admit_date":     false,
+        "is_readmission":              false,
+        "is_c2_readmission":           false,
+        "is_transferred_encounter":    false,
+        "is_snf_record":               false,
+        "is_snf_admit_date_reference": false,
+        "is_er_visit":                 false,
+        "is_pcp_visit":                true,
+        "is_office_visit":             true,
+        "is_office_visit_secondary":   false,
+        "follow_up_flag":              false,
+        "is_72_hour_follow_up":        false,
+        "is_7_day_follow_up":          false,
+        "is_14_day_follow_up":         false,
+        "is_global_14_day_follow_up":  false,
+        "follow_up_72_hour_date":      null,
+        "er_follow_up":                false,
+        "observation_follow_up":       false,
+        "is_bcda_match":               true,
+        "calculated_bed_days":         0,
+        "place_of_service":            "Office",
+        "provider_specialty":          "Internal Medicine",
+        "follow_up_date":              null,
+        "tfu_denominator":             false,
+        "acr_numerator":               false,
+        "acr_denominator":             false,
+        "uamcc_numerator":             false,
 
         "diagnoses": [
           {
@@ -584,9 +615,9 @@
 
     "medications": [
       {
-        "id":                 "57664037718_2025-01-15",
-        "ndc_id":             "57664037718",
+        "id":                 991023401,
         "rxnorm_id":          "861007",
+        "ndc_id":             "57664037718",
         "medication_name":    "Metformin 500mg",
         "generic_name":       "Metformin HCl",
         "drug_class":         "Biguanide / Antidiabetic",
@@ -615,9 +646,9 @@
         ]
       },
       {
-        "id":                 "00074306158_2025-01-15",
-        "ndc_id":             "00074306158",
+        "id":                 991023402,
         "rxnorm_id":          "1091641",
+        "ndc_id":             "00074306158",
         "medication_name":    "Lisinopril 10mg",
         "generic_name":       "Lisinopril",
         "drug_class":         "ACE Inhibitor / Antihypertensive",
@@ -731,6 +762,26 @@
         }
       ]
     },
+
+    "transport_benefits": [
+      {
+        "id":                     4421,
+        "encounter_nr":           null,
+        "date":                   "2025-02-10",
+        "mode":                   "Ride-share",
+        "eligible_rides":         4,
+        "ride_booked_by":         "care_manager",
+        "cost_of_the_ride":       18.50,
+        "transportation_company": "Lyft Health",
+        "pickup_address":         "123 Main St, Miami FL 33101",
+        "dropoff_address":        "456 Medical Dr, Miami FL 33102",
+        "notes":                  "Patient requires wheelchair access",
+        "facility_name":          "Mercy Hospital",
+        "facility_sub_name":      null,
+        "dce_provider_name":      "Dr. Smith",
+        "member_type":            "Medicare"
+      }
+    ],
 
     "emr_appointments": [
       {

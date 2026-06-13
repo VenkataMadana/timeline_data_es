@@ -341,7 +341,7 @@ CDC time.
 | **1-hop via MBI cross-reference** | `care_team{}` (all fields) | `dc_bene_alignment_rostr_m01.mm_curr_mbi_id → adt_patient.mra_clm_refer_m01 → origid` |
 | **1-hop via personell fan-out** | `care_team.care_manager` | `personell.nr → cds_patient_personell_assocs → origid (many rows possible)` |
 | **2-hop via result chain** | `labs[]` (on `cpoe_result_values` change) | `cpoe_result_values.result_id → cpoe_result.encounter_nr → adt_encounter → origid` |
-| **Date-match (no FK)** | `encounters[].enc_medications[]` | `origid` is available but encounter assignment depends on date equality — partial update impossible |
+| **Date-match (no FK)** | `encounters[].enc_medications[]` | `patientid` = origid directly on source table — CLEAN; date-match is internal SP grouping only |
 | **Mass-impact (no origid, no scoping)** | `chronic_conditions[]`, `hcc_capture{}`, `encounters[].diagnoses[]`, `labs[]` (on `flowsheet_rows` change) | All patients with matching diagnosis/result codes must be re-indexed |
 
 ---
@@ -369,7 +369,7 @@ join resolution. A CDC event on these tables can call the SP immediately with th
 | `assessments[]` | `mra_assessments_and_screenings` | `origid` |
 | `alerts[]` | `mra_scorecard_alerts` | `origid` |
 | `sdoh.reward_programs[]` | `chronic_disease_reward_program` | `origid` |
-| `sdoh.transport_benefits[]` | `transportation_benefit` | `orig_id` |
+| `transport_benefits[]` | `transportation_benefit` | `orig_id` |
 | `emr_appointments[]` | `adt_appointment` | `origid` |
 | `encounters[]` (ADT spine) | `adt_encounter` | `origid` |
 | `encounters[]` (mra1 spine) | `mra1_encounter` | `patient_id` |

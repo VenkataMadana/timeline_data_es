@@ -30,9 +30,11 @@ def _db_config(read_only: bool = True) -> dict:
         user            = os.environ["DB_USER"],
         password        = os.environ["DB_PASSWORD"],
         database        = os.environ["DB_NAME"],
-        ssl             = {"ssl": True},   # TLS to RDS; no client cert required
-        connect_timeout = 15,
-        charset         = "utf8mb4",
+        ssl              = {"ssl": True},   # TLS to RDS; no client cert required
+        connect_timeout  = 15,
+        read_timeout     = 1800,           # SP can take >10 min for large patient datasets
+        write_timeout    = 1800,
+        charset          = "utf8mb4",
     )
     return cfg
 
@@ -47,7 +49,7 @@ REQUIRED_PATIENT_KEYS = [
     "rule_flags", "chronic_conditions", "raf_profile", "hcc_capture",
     "risk_scores", "uamcc", "hedis_measures", "encounters",
     "labs", "medications", "assessments", "alerts", "sdoh",
-    "emr_appointments", "_meta",
+    "transport_benefits", "emr_appointments", "_meta",
 ]
 # rule_flags booleans/scalars every rule engine reads
 REQUIRED_RULE_FLAGS = [

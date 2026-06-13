@@ -80,7 +80,7 @@ patient
 │   ├── discharge{}       ← disposition, discharge_to_code, readmit_30d, tfu_enabled, tcm_*
 │   ├── diagnoses[]       ← icd_code (from adt_encounter_icd_codes)
 │   ├── procedures[]      ← billing_code (from mra1_encounter_bill_cpts)
-│   ├── enc_medications[]
+│   ├── enc_medications[]  ← rxnorm_id only — link to patient.medications[] for full detail
 │   ├── audit{}           ← audit_status, mos, tfu_numerator, mif_exclusion
 │   └── claim{}           ← clm_uniq_id, clm_amt_paid, rndrg_prvdr_npi
 ├── medications[]         ← patient-level (drfirst), not encounter-linked
@@ -93,11 +93,12 @@ patient
 ├── hcc_capture{}
 ├── uamcc{}
 ├── sdoh{}
+├── transport_benefits[]  ← patient-level (transportation_benefit table, keyed by orig_id)
 ├── emr_appointments[]
 └── _meta{}               ← schema_version, trigger_source, created_at
 ```
 
-**Rule of thumb:** Sub-arrays that have an `encounter_nr` in MySQL are embedded inside `encounters[]`. Sub-arrays without one (`medications`, `labs`, `assessments`, `alerts`, `hedis_measures`, `raf_profile`, `risk_scores`, `uamcc`, `sdoh`, `emr_appointments`) live at the patient top-level.
+**Rule of thumb:** Sub-arrays that have an `encounter_nr` in MySQL are embedded inside `encounters[]`. Sub-arrays without one (`medications`, `labs`, `assessments`, `alerts`, `hedis_measures`, `raf_profile`, `risk_scores`, `uamcc`, `sdoh`, `transport_benefits`, `emr_appointments`) live at the patient top-level.
 
 ### `rule_flags{}` — Critical Performance Pattern
 
