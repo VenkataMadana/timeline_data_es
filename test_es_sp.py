@@ -12,7 +12,7 @@ Usage:
     python test_es_sp.py --validate-sp --validate-doc  # load SP then validate output
 """
 
-import sys, json, os, pymysql
+import sys, json, os, socket, pymysql
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -37,6 +37,20 @@ def _db_config(read_only: bool = True) -> dict:
         charset          = "utf8mb4",
     )
     return cfg
+
+
+def _enable_keepalive(conn) -> None:
+    """Enable TCP keepalive so the AWS NAT gateway (idle timeout ~350 s) does not
+    drop the connection while the SP is executing.  Tries both pymysql socket
+    attribute names; silently ignores platforms where SIO_KEEPALIVE_VALS is absent."""
+    sock = getattr(conn, "socket", None) or getattr(conn, "_sock", None)
+    if sock is None:
+        return
+    try:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+        sock.ioctl(socket.SIO_KEEPALIVE_VALS, (1, 30_000, 3_000))  # Windows only
+    except Exception:
+        pass
 
 
 DEFAULT_PATIENT_ID = os.getenv("DEFAULT_PATIENT_ID", "7H49DQ0VG28")
@@ -94,6 +108,7 @@ def validate_sp() -> None:
     cfg = _db_config()
     print(f"Connecting to {cfg['host']} / {cfg['database']} …")
     conn = pymysql.connect(**cfg)
+    _enable_keepalive(conn)
     cur  = conn.cursor()
     try:
         print("DROP PROCEDURE IF EXISTS sp_get_patient_es_doc …")
@@ -278,6 +293,7 @@ def main():
     cfg = _db_config()
     print(f"Connecting to {cfg['host']} / {cfg['database']} …")
     conn = pymysql.connect(**cfg)
+    _enable_keepalive(conn)
     cur  = conn.cursor()
     cur.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED")
 
