@@ -12,10 +12,10 @@
     },
     "_meta": {
       "source_db": "mradb_prod",
-      "created_at": "2026-06-13T18:46:46Z",
+      "created_at": "2026-06-13T20:50:37Z",
       "schema_version": "2.0",
       "trigger_source": "initial_load",
-      "last_modified_at": "2026-06-13T18:46:46Z"
+      "last_modified_at": "2026-06-13T20:50:37Z"
     },
     "uamcc": {
       "id": "7H49DQ0VG28_uamcc_2026",
@@ -110931,7 +110931,7 @@
       "readmit_30d": false,
       "readmit_90d": false,
       "ccm_enrolled": false,
-      "last_updated": "2026-06-13T18:46:46Z",
+      "last_updated": "2026-06-13T20:50:37Z",
       "active_alerts": 166,
       "awv_last_date": null,
       "open_inpatient": true,

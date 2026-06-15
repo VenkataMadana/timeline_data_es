@@ -541,91 +541,6 @@ sp_get_patient_es_doc: BEGIN
       --   Observation | Part B | Part C | Part D | Part DME | Psychiatric |
       --   Rehabilitation | SNF
       'encounters', (
-        WITH
-
-        -- ── CTE 1: diagnoses grouped by encounter_nr ─────────────────────────
-        -- Joins mra_hcc_coefficients ONCE for all patient encounters instead of
-        -- once per encounter row (eliminates N correlated subquery executions).
-        -- Inner derived table orders by icd_order because MySQL 8 JSON_ARRAYAGG
-        -- does not support ORDER BY inside the function directly.
-        enc_diag AS (
-          SELECT
-            ord.encounter_nr,
-            JSON_ARRAYAGG(ord.diag_obj) AS diag_json
-          FROM (
-            SELECT
-              aic.encounter_nr,
-              JSON_OBJECT(
-                'id',               aic.id,
-                'icd_code',         aic.diagnosis_code,
-                'icd_desc',         aic.diagnosis_desc,
-                'onset_date',       DATE_FORMAT(aic.onset_date, '%Y-%m-%d'),
-                'problem_type',     aic.problem_type,
-                'icd_order',        aic.icd_order,
-                'status',           COALESCE(aic.status, 'Active'),
-                'hcc_number',       hcd.hcc,
-                'hcc_score',        hcd.community_nondual_aged,
-                'hcc_included',     IF(hcd.hcc IS NOT NULL,
-                                       CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-                'is_comorbid',      IF(aic.is_comorbid = 1,
-                                       CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
-                'agreement_status', 'Agree',
-                'source',           COALESCE(aic.source, src.enc_source)
-              ) AS diag_obj
-            FROM adt_encounter_icd_codes aic
-            LEFT JOIN mra_hcc_coefficients hcd
-              ON  hcd.diagnosis_code = aic.diagnosis_code
-              AND hcd.active_date   <= NOW()
-              AND hcd.inactive_date >= NOW()
-            INNER JOIN (
-              SELECT encounter_nr, mos_type  AS enc_source FROM adt_encounter  WHERE origid    = p_origid
-              UNION ALL
-              SELECT encounter_nr, 'mra1'    AS enc_source FROM mra1_encounter WHERE patient_id = p_origid
-            ) src ON src.encounter_nr = aic.encounter_nr
-            ORDER BY aic.encounter_nr, aic.icd_order
-          ) ord
-          GROUP BY ord.encounter_nr
-        ),
-
-        -- ── CTE 2: CPT procedures grouped by encounter_nr ────────────────────
-        -- Resolves encounter date (for procedure_date / id) with a single join
-        -- to both encounter tables instead of one correlated scan per encounter.
-        enc_procs AS (
-          SELECT
-            cpt.encounter_nr,
-            JSON_ARRAYAGG(
-              JSON_OBJECT(
-                'id',             CONCAT(CONVERT(cpt.bb_Code USING utf8mb4), '_', enc_dates.enc_date_str),
-                'billing_code',   CONVERT(cpt.bb_Code USING utf8mb4),
-                'cpt_modifier',   cpt.bb_modifier,
-                'procedure_date', enc_dates.enc_date_str,
-                'revenue_code',   cpt.CLM_LINE_PROD_REV_CTR_CD
-              )
-            ) AS proc_json
-          FROM mra1_encounter_bill_cpts cpt
-          INNER JOIN (
-            SELECT encounter_nr, DATE_FORMAT(encounter_date,  '%Y-%m-%d') AS enc_date_str
-            FROM   adt_encounter  WHERE origid     = p_origid
-            UNION ALL
-            SELECT encounter_nr, DATE_FORMAT(enc_admit_date, '%Y-%m-%d') AS enc_date_str
-            FROM   mra1_encounter WHERE patient_id = p_origid
-          ) enc_dates ON enc_dates.encounter_nr = cpt.encounter_nr
-          GROUP BY cpt.encounter_nr
-        ),
-
-        -- ── CTE 3: admission medications grouped by start date ────────────────
-        -- One scan of drfirst_patient_medications grouped by date; each encounter
-        -- branch does a single O(1) lookup instead of a correlated date scan.
-        enc_meds AS (
-          SELECT
-            DATE(dm.start_date)                                   AS med_date,
-            JSON_ARRAYAGG(JSON_OBJECT('rxnorm_id', dm.RxnormID)) AS med_json
-          FROM drfirst_patient_medications dm
-          WHERE dm.patientid = p_origid
-            AND dm.admission = 'yes'
-          GROUP BY DATE(dm.start_date)
-        )
-
         SELECT JSON_ARRAYAGG(enc_obj)
         FROM (
 
@@ -704,9 +619,56 @@ sp_get_patient_es_doc: BEGIN
                 'prvdr_spclty_cd',   ae.CLM_PRVDR_SPCLTY_CD
               ),
 
-              'diagnoses',       COALESCE(d.diag_json, JSON_ARRAY()),
-              'procedures',      COALESCE(p.proc_json, JSON_ARRAY()),
-              'enc_medications', COALESCE(m.med_json,  JSON_ARRAY()),
+              'diagnoses', COALESCE(
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                   'id',               aic.id,
+                   'icd_code',         aic.diagnosis_code,
+                   'icd_desc',         aic.diagnosis_desc,
+                   'onset_date',       DATE_FORMAT(aic.onset_date, '%Y-%m-%d'),
+                   'problem_type',     aic.problem_type,
+                   'icd_order',        aic.icd_order,
+                   'status',           COALESCE(aic.status, 'Active'),
+                   'hcc_number',       hcd.hcc,
+                   'hcc_score',        hcd.community_nondual_aged,
+                   'hcc_included',     IF(hcd.hcc IS NOT NULL,
+                                          CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                   'is_comorbid',      IF(aic.is_comorbid = 1,
+                                          CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                   'agreement_status', 'Agree',
+                   'source',           COALESCE(aic.source, ae.mos_type)
+                 ))
+                 FROM adt_encounter_icd_codes aic
+                 LEFT JOIN mra_hcc_coefficients hcd
+                   ON  hcd.diagnosis_code = aic.diagnosis_code
+                   AND hcd.active_date   <= NOW()
+                   AND hcd.inactive_date >= NOW()
+                 WHERE aic.encounter_nr = ae.encounter_nr
+                ),
+                JSON_ARRAY()
+              ),
+              'procedures', COALESCE(
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                   'id',             CONCAT(CONVERT(cpt.bb_Code USING utf8mb4),
+                                            '_', DATE_FORMAT(ae.encounter_date, '%Y-%m-%d')),
+                   'billing_code',   CONVERT(cpt.bb_Code USING utf8mb4),
+                   'cpt_modifier',   cpt.bb_modifier,
+                   'procedure_date', DATE_FORMAT(ae.encounter_date, '%Y-%m-%d'),
+                   'revenue_code',   cpt.CLM_LINE_PROD_REV_CTR_CD
+                 ))
+                 FROM mra1_encounter_bill_cpts cpt
+                 WHERE cpt.encounter_nr = ae.encounter_nr
+                ),
+                JSON_ARRAY()
+              ),
+              'enc_medications', COALESCE(
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT('rxnorm_id', dm.RxnormID))
+                 FROM drfirst_patient_medications dm
+                 WHERE dm.patientid = p_origid
+                   AND dm.admission = 'yes'
+                   AND DATE(dm.start_date) = DATE(ae.encounter_date)
+                ),
+                JSON_ARRAY()
+              ),
 
               'audit', JSON_OBJECT(
                 'care_status',   ae.care_status,
@@ -720,9 +682,6 @@ sp_get_patient_es_doc: BEGIN
               )
             ) AS enc_obj
           FROM adt_encounter ae
-          LEFT JOIN enc_diag  d ON d.encounter_nr = ae.encounter_nr
-          LEFT JOIN enc_procs p ON p.encounter_nr = ae.encounter_nr
-          LEFT JOIN enc_meds  m ON m.med_date     = DATE(ae.encounter_date)
           WHERE ae.origid = p_origid
 
           UNION ALL
@@ -866,9 +825,56 @@ sp_get_patient_es_doc: BEGIN
               'uamcc_numerator',             IF(me.uamcc_numerator = 1,
                                                 CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
 
-              'diagnoses',       COALESCE(d.diag_json, JSON_ARRAY()),
-              'procedures',      COALESCE(p.proc_json, JSON_ARRAY()),
-              'enc_medications', COALESCE(m.med_json,  JSON_ARRAY()),
+              'diagnoses', COALESCE(
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                   'id',               aic.id,
+                   'icd_code',         aic.diagnosis_code,
+                   'icd_desc',         aic.diagnosis_desc,
+                   'onset_date',       DATE_FORMAT(aic.onset_date, '%Y-%m-%d'),
+                   'problem_type',     aic.problem_type,
+                   'icd_order',        aic.icd_order,
+                   'status',           COALESCE(aic.status, 'Active'),
+                   'hcc_number',       hcd.hcc,
+                   'hcc_score',        hcd.community_nondual_aged,
+                   'hcc_included',     IF(hcd.hcc IS NOT NULL,
+                                          CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                   'is_comorbid',      IF(aic.is_comorbid = 1,
+                                          CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                   'agreement_status', 'Agree',
+                   'source',           COALESCE(aic.source, 'mra1')
+                 ))
+                 FROM adt_encounter_icd_codes aic
+                 LEFT JOIN mra_hcc_coefficients hcd
+                   ON  hcd.diagnosis_code = aic.diagnosis_code
+                   AND hcd.active_date   <= NOW()
+                   AND hcd.inactive_date >= NOW()
+                 WHERE aic.encounter_nr = me.encounter_nr
+                ),
+                JSON_ARRAY()
+              ),
+              'procedures', COALESCE(
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                   'id',             CONCAT(CONVERT(cpt.bb_Code USING utf8mb4),
+                                            '_', DATE_FORMAT(me.enc_admit_date, '%Y-%m-%d')),
+                   'billing_code',   CONVERT(cpt.bb_Code USING utf8mb4),
+                   'cpt_modifier',   cpt.bb_modifier,
+                   'procedure_date', DATE_FORMAT(me.enc_admit_date, '%Y-%m-%d'),
+                   'revenue_code',   cpt.CLM_LINE_PROD_REV_CTR_CD
+                 ))
+                 FROM mra1_encounter_bill_cpts cpt
+                 WHERE cpt.encounter_nr = me.encounter_nr
+                ),
+                JSON_ARRAY()
+              ),
+              'enc_medications', COALESCE(
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT('rxnorm_id', dm.RxnormID))
+                 FROM drfirst_patient_medications dm
+                 WHERE dm.patientid = p_origid
+                   AND dm.admission = 'yes'
+                   AND DATE(dm.start_date) = me.enc_admit_date
+                ),
+                JSON_ARRAY()
+              ),
 
               'audit', JSON_OBJECT(
                 'care_status',   NULL,
@@ -881,9 +887,6 @@ sp_get_patient_es_doc: BEGIN
               )
             ) AS enc_obj
           FROM mra1_encounter me
-          LEFT JOIN enc_diag  d ON d.encounter_nr = me.encounter_nr
-          LEFT JOIN enc_procs p ON p.encounter_nr = me.encounter_nr
-          LEFT JOIN enc_meds  m ON m.med_date     = me.enc_admit_date
           WHERE me.patient_id = p_origid
 
           ORDER BY enc_date DESC
