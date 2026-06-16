@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"CREATE TABLE \\\\`patient\\\\`\\\\|CREATE TABLE \\\\`dc_bene_alignment_rostr_m01\\\\`\" /Users/venkatamadana/Documents/pocs/timeline_data_es/mradb_Schema.sql)",
+      "Bash(grep -n \"CREATE TABLE \\\\`mra_dce_cm_mapping\\\\`\\\\|CREATE TABLE \\\\`personell\\\\`\" /Users/venkatamadana/Documents/pocs/timeline_data_es/mradb_Schema.sql)"
+    ]
+  }
+}

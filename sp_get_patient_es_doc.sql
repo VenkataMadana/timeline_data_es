@@ -15,7 +15,9 @@
 --   • CDC strategy: ES ReplaceOne on {patient.id} = p_origid
 --
 -- Source tables (mradb_prod):
---   adt_patient, adt_encounter, mra1_encounter (UNION ALL for encounter spine),
+--   patient (base), dc_bene_alignment_rostr_m01 (base),
+--   mra_dce_cm_mapping + personell (care team role resolution),
+--   adt_encounter, mra1_encounter (UNION ALL for encounter spine),
 --   adt_encounter_icd_codes, adt_encounter_procedure,
 --   mra1_encounter_bill_cpts, mra_hcc_coefficients, mra_raf_patient,
 --   mra_uamcc_details, mra_scorecard_alerts, drfirst_patient_medications,
@@ -88,7 +90,8 @@ sp_get_patient_es_doc: BEGIN
         )
       ),
 
-      -- ─ care_team — sourced from dc_bene_alignment_rostr_m01 (latest row) ──
+      -- ─ care_team — base: dc_bene_alignment_rostr_m01 (latest aligned row)
+      --              care roles resolved via mra_dce_cm_mapping → personell
       'care_team', (
         SELECT JSON_OBJECT(
           'id',                  CONCAT(p_origid, '_care_team'),
@@ -101,11 +104,38 @@ sp_get_patient_es_doc: BEGIN
           'facility_name',       r.dce_group_name,
           'dce_provider',        r.dce_provider_name,
           'dce_provider_npi',    r.prov_npi_nr,
-          'care_manager',        (SELECT per.name
-                                   FROM cds_patient_personell_assocs cpa
-                                   JOIN personell per ON per.nr = cpa.personell_id
-                                   WHERE cpa.origid = p_origid
-                                   ORDER BY cpa.created_date DESC LIMIT 1),
+          'care_manager',        (
+            SELECT per.name
+            FROM mra_dce_cm_mapping mc
+            INNER JOIN personell per ON per.nr = mc.cm_nr
+            WHERE mc.provider_npi = r.prov_npi_nr
+              AND mc.type = 'CCM_MNGT'
+            LIMIT 1
+          ),
+          'outreach_worker',     (
+            SELECT per.name
+            FROM mra_dce_cm_mapping mc
+            INNER JOIN personell per ON per.nr = mc.cm_nr
+            WHERE mc.provider_npi = r.prov_npi_nr
+              AND mc.type = 'Outreach'
+            LIMIT 1
+          ),
+          'census_manager',      (
+            SELECT per.name
+            FROM mra_dce_cm_mapping mc
+            INNER JOIN personell per ON per.nr = mc.cm_nr
+            WHERE mc.provider_npi = r.prov_npi_nr
+              AND mc.type = 'census_notes'
+            LIMIT 1
+          ),
+          'census_mos',                 (
+            SELECT per.name
+            FROM mra_dce_cm_mapping mc
+            INNER JOIN personell per ON per.nr = mc.cm_nr
+            WHERE mc.provider_npi = r.prov_npi_nr
+              AND mc.type = 'census_mos'
+            LIMIT 1
+          ),
           'last_pcp_visit',      DATE_FORMAT(r.Last_PCP_Visit_Date, '%Y-%m-%d'),
           'next_pcp_visit',      DATE_FORMAT(p.Next_Office_Visit, '%Y-%m-%d'),
           'days_since_pcp_visit',DATEDIFF(CURDATE(), r.Last_PCP_Visit_Date)
@@ -1145,7 +1175,7 @@ sp_get_patient_es_doc: BEGIN
     ) -- end patient{}
   ) AS es_doc
 
-  FROM adt_patient p
+  FROM patient p
   WHERE p.origid = p_origid
   LIMIT 1;
 
