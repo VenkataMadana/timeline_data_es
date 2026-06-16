@@ -2,7 +2,8 @@
 -- sp_get_patient_es_doc  (schema version 2.0)
 -- Builds the full patient_value_care JSON document for Elasticsearch initial load.
 --
--- Input : p_origid  VARCHAR(64) — patient origid (CDC primary key / ES doc _id)
+-- Input : p_origid     VARCHAR(64) — patient origid (CDC primary key / ES doc _id)
+--         p_cc_version VARCHAR(20) — cc_version filter for dc_bene_alignment_rostr_m01 (e.g. '20260519')
 -- Output: single resultset, one column `es_doc` (LONGTEXT JSON)
 --
 -- Design:
@@ -18,9 +19,10 @@
 --   patient (base), dc_bene_alignment_rostr_m01 (base),
 --   mra_dce_cm_mapping + personell (care team role resolution),
 --   adt_encounter, mra1_encounter (UNION ALL for encounter spine),
---   adt_encounter_icd_codes, adt_encounter_procedure,
+--   adt_encounter_icd_codes (encounters diagnoses), mra1_encounter_icd_codes (hcc_capture), adt_encounter_procedure,
 --   mra1_encounter_bill_cpts, mra_hcc_coefficients, mra_raf_patient,
---   mra_uamcc_details, mra_scorecard_alerts, drfirst_patient_medications,
+--   mra_uamcc_details, mra_scorecard_alerts, drfirst_patient_medications (patient-level medications),
+--   cclf_encounter_patient_medication (encounter-level enc_medications),
 --   encounter_risk_assesments, in_home_patient_program, mra_chart_queue,
 --   reminder_events, transportation_benefit, sdoh_meal_plan,
 --   chronic_disease_reward_program, care_plan, care_plan_patient,
@@ -39,7 +41,10 @@ DROP PROCEDURE IF EXISTS `sp_get_patient_es_doc`;
 
 DELIMITER $$
 
-CREATE PROCEDURE `sp_get_patient_es_doc`(IN p_origid VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci)
+CREATE PROCEDURE `sp_get_patient_es_doc`(
+  IN p_origid     VARCHAR(64)  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  IN p_cc_version VARCHAR(20)  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+)
 sp_get_patient_es_doc: BEGIN
 
   -- ── 1. Main document ──────────────────────────────────────────────────────
@@ -90,67 +95,60 @@ sp_get_patient_es_doc: BEGIN
         )
       ),
 
-      -- ─ care_team — base: dc_bene_alignment_rostr_m01 (latest aligned row)
+      -- ─ care_team — r = latest aligned dc_bene_alignment_rostr_m01 row (base join)
       --              care roles resolved via mra_dce_cm_mapping → personell
-      'care_team', (
-        SELECT JSON_OBJECT(
-          'id',                  CONCAT(p_origid, '_care_team'),
-          'market_id',           r.market_id,
-          'market_name',         r.market_names,
-          'group_name',          r.dce_group_name,
-          'sub_group_name',      r.dce_sub_group_name,
-          'subgroup_id',         r.dce_sub_group_nr,
-          'facility_nr',         r.dce_group_nr,
-          'facility_name',       r.dce_group_name,
-          'dce_provider',        r.dce_provider_name,
-          'dce_provider_npi',    r.prov_npi_nr,
-          'care_manager',        (
-            SELECT per.name
-            FROM mra_dce_cm_mapping mc
-            INNER JOIN personell per ON per.nr = mc.cm_nr
-            WHERE mc.provider_npi = r.prov_npi_nr
-              AND mc.type = 'CCM_MNGT'
-            LIMIT 1
-          ),
-          'outreach_worker',     (
-            SELECT per.name
-            FROM mra_dce_cm_mapping mc
-            INNER JOIN personell per ON per.nr = mc.cm_nr
-            WHERE mc.provider_npi = r.prov_npi_nr
-              AND mc.type = 'Outreach'
-            LIMIT 1
-          ),
-          'census_manager',      (
-            SELECT per.name
-            FROM mra_dce_cm_mapping mc
-            INNER JOIN personell per ON per.nr = mc.cm_nr
-            WHERE mc.provider_npi = r.prov_npi_nr
-              AND mc.type = 'census_notes'
-            LIMIT 1
-          ),
-          'census_mos',                 (
-            SELECT per.name
-            FROM mra_dce_cm_mapping mc
-            INNER JOIN personell per ON per.nr = mc.cm_nr
-            WHERE mc.provider_npi = r.prov_npi_nr
-              AND mc.type = 'census_mos'
-            LIMIT 1
-          ),
-          'last_pcp_visit',      DATE_FORMAT(r.Last_PCP_Visit_Date, '%Y-%m-%d'),
-          'next_pcp_visit',      DATE_FORMAT(p.Next_Office_Visit, '%Y-%m-%d'),
-          'days_since_pcp_visit',DATEDIFF(CURDATE(), r.Last_PCP_Visit_Date)
-        )
-        FROM dc_bene_alignment_rostr_m01 r
-        WHERE r.mm_curr_mbi_id = p.mra_clm_refer_m01
-          AND r.ALIGN_STATUS_CODE IN ('AL','D1Y')
-        ORDER BY r.mm_date DESC
-        LIMIT 1
+      'care_team', JSON_OBJECT(
+        'id',                  CONCAT(p_origid, '_care_team'),
+        'market_id',           r.market_id,
+        'market_name',         r.market_names,
+        'group_name',          r.dce_group_name,
+        'sub_group_name',      r.dce_sub_group_name,
+        'subgroup_id',         r.dce_sub_group_nr,
+        'facility_nr',         r.dce_group_nr,
+        'facility_name',       r.dce_group_name,
+        'dce_provider',        r.dce_provider_name,
+        'dce_provider_npi',    r.prov_npi_nr,
+        'care_manager',        (
+          SELECT per.name
+          FROM mra_dce_cm_mapping mc
+          INNER JOIN personell per ON per.nr = mc.cm_nr
+          WHERE mc.provider_npi = r.prov_npi_nr
+            AND mc.type = 'CCM_MNGT'
+          LIMIT 1
+        ),
+        'outreach_worker',     (
+          SELECT per.name
+          FROM mra_dce_cm_mapping mc
+          INNER JOIN personell per ON per.nr = mc.cm_nr
+          WHERE mc.provider_npi = r.prov_npi_nr
+            AND mc.type = 'Outreach'
+          LIMIT 1
+        ),
+        'census_manager',      (
+          SELECT per.name
+          FROM mra_dce_cm_mapping mc
+          INNER JOIN personell per ON per.nr = mc.cm_nr
+          WHERE mc.provider_npi = r.prov_npi_nr
+            AND mc.type = 'census_notes'
+          LIMIT 1
+        ),
+        'mos',                 (
+          SELECT per.name
+          FROM mra_dce_cm_mapping mc
+          INNER JOIN personell per ON per.nr = mc.cm_nr
+          WHERE mc.provider_npi = r.prov_npi_nr
+            AND mc.type = 'census_mos'
+          LIMIT 1
+        ),
+        'last_pcp_visit',      DATE_FORMAT(r.Last_PCP_Visit_Date, '%Y-%m-%d'),
+        'next_pcp_visit',      DATE_FORMAT(p.Next_Office_Visit, '%Y-%m-%d'),
+        'days_since_pcp_visit',DATEDIFF(CURDATE(), r.Last_PCP_Visit_Date)
       ),
 
       -- ─ enrollment ────────────────────────────────────────────────────────
       'enrollment', JSON_OBJECT(
         'status',            p.status,
-        'align_status_code', p.ALIG_STATUS_CODE,
+        'align_status_code', r.ALIGN_STATUS_CODE,
         'ccm_enabled',       IF(p.is_ccm_enabled = 1, CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
         'ccm_level',         p.ccm_level,
         'ccm_active_date',   DATE_FORMAT(p.ccm_activedate, '%Y-%m-%d'),
@@ -368,38 +366,39 @@ sp_get_patient_es_doc: BEGIN
       ),
 
       -- ─ raf_profile{} ─────────────────────────────────────────────────────
+      -- Single scan over mra_raf_patient; ROW_NUMBER() picks latest month per
+      -- type, then conditional MAX pivots the three types into one row.
       'raf_profile', (
         SELECT JSON_OBJECT(
-          'id',         CONCAT(p_origid, '_', YEAR(CURDATE())),
-          'year',       YEAR(CURDATE()),
-          'pmra',       JSON_OBJECT(
-            'detail_score',  pmra.total_score,
-            'initial_score', pmra.initial_score,
-            'month',         pmra.MONTH
+          'id',          CONCAT(p_origid, '_', YEAR(CURDATE())),
+          'year',        YEAR(CURDATE()),
+          'pmra',        JSON_OBJECT(
+            'detail_score',  MAX(CASE WHEN rp.type = 'pmra'  THEN rp.total_score   END),
+            'initial_score', MAX(CASE WHEN rp.type = 'pmra'  THEN rp.initial_score END),
+            'month',         MAX(CASE WHEN rp.type = 'pmra'  THEN rp.month         END)
           ),
-          'prmra',      JSON_OBJECT(
-            'detail_score',  prmra.total_score,
-            'initial_score', prmra.initial_score,
-            'month',         prmra.MONTH
+          'prmra',       JSON_OBJECT(
+            'detail_score',  MAX(CASE WHEN rp.type = 'prmra' THEN rp.total_score   END),
+            'initial_score', MAX(CASE WHEN rp.type = 'prmra' THEN rp.initial_score END),
+            'month',         MAX(CASE WHEN rp.type = 'prmra' THEN rp.month         END)
           ),
-          'rmra',       JSON_OBJECT(
-            'detail_score',  rmra.total_score,
-            'initial_score', rmra.initial_score,
-            'month',         rmra.MONTH
+          'rmra',        JSON_OBJECT(
+            'detail_score',  MAX(CASE WHEN rp.type = 'rmra'  THEN rp.total_score   END),
+            'initial_score', MAX(CASE WHEN rp.type = 'rmra'  THEN rp.initial_score END),
+            'month',         MAX(CASE WHEN rp.type = 'rmra'  THEN rp.month         END)
           ),
-          'raf_version',28,
-          'score_trend','Stable'
+          'raf_version', 28,
+          'score_trend', 'Stable'
         )
-        FROM (SELECT 1) _base
-        LEFT JOIN (SELECT total_score, initial_score, MONTH FROM mra_raf_patient
-                   WHERE origid = p_origid COLLATE utf8mb4_unicode_ci AND TYPE = 'pmra' AND YEAR = YEAR(CURDATE())
-                   ORDER BY MONTH DESC LIMIT 1) pmra ON 1=1
-        LEFT JOIN (SELECT total_score, initial_score, MONTH FROM mra_raf_patient
-                   WHERE origid = p_origid COLLATE utf8mb4_unicode_ci AND TYPE = 'prmra' AND YEAR = YEAR(CURDATE())
-                   ORDER BY MONTH DESC LIMIT 1) prmra ON 1=1
-        LEFT JOIN (SELECT total_score, initial_score, MONTH FROM mra_raf_patient
-                   WHERE origid = p_origid COLLATE utf8mb4_unicode_ci AND TYPE = 'rmra' AND YEAR = YEAR(CURDATE())
-                   ORDER BY MONTH DESC LIMIT 1) rmra ON 1=1
+        FROM (
+          SELECT type, total_score, initial_score, month,
+                 ROW_NUMBER() OVER (PARTITION BY type ORDER BY month DESC) AS rn
+          FROM mra_raf_patient
+          WHERE origid = p_origid COLLATE utf8mb4_unicode_ci
+            AND year  = YEAR(CURDATE())
+            AND type IN ('pmra', 'prmra', 'rmra')
+        ) rp
+        WHERE rp.rn = 1
       ),
 
       -- ─ hcc_capture{} ─────────────────────────────────────────────────────
@@ -416,35 +415,35 @@ sp_get_patient_es_doc: BEGIN
           'gap_hccs',        (SELECT JSON_ARRAYAGG(CONCAT('HCC-', hc2.hcc_nr))
                                FROM mra_hcc_coefficients hc2
                                INNER JOIN (SELECT DISTINCT ai3.diagnosis_code
-                                           FROM adt_encounter_icd_codes ai3
-                                           INNER JOIN adt_encounter ae3 ON ae3.encounter_nr = ai3.encounter_nr
-                                           WHERE ae3.origid = p_origid) pt2
+                                           FROM mra1_encounter_icd_codes ai3
+                                           INNER JOIN mra1_encounter ae3 ON ae3.encounter_nr = ai3.encounter_nr
+                                           WHERE ae3.patient_id = p_origid) pt2
                                  ON pt2.diagnosis_code = hc2.diagnosis_code
                                 AND hc2.active_date <= NOW() AND hc2.inactive_date >= NOW()
                                WHERE NOT EXISTS (
-                                 SELECT 1 FROM adt_encounter_icd_codes ai4
-                                 INNER JOIN adt_encounter ae4 ON ae4.encounter_nr = ai4.encounter_nr
-                                 WHERE ae4.origid = p_origid
-                                   AND YEAR(ae4.encounter_date) = YEAR(CURDATE())
+                                 SELECT 1 FROM mra1_encounter_icd_codes ai4
+                                 INNER JOIN mra1_encounter ae4 ON ae4.encounter_nr = ai4.encounter_nr
+                                 WHERE ae4.patient_id = p_origid
+                                   AND YEAR(ae4.enc_date) = YEAR(CURDATE())
                                    AND ai4.diagnosis_code = hc2.diagnosis_code
                                )),
           'gap_revenue_at_risk', 0.00
         )
         FROM (
           SELECT DISTINCT ai.diagnosis_code
-          FROM adt_encounter_icd_codes ai
-          INNER JOIN adt_encounter ae ON ae.encounter_nr = ai.encounter_nr
-          WHERE ae.origid = p_origid
+          FROM mra1_encounter_icd_codes ai
+          INNER JOIN mra1_encounter ae ON ae.encounter_nr = ai.encounter_nr
+          WHERE ae.patient_id = p_origid
         ) pt_codes
         INNER JOIN mra_hcc_coefficients hc
           ON hc.diagnosis_code = pt_codes.diagnosis_code
          AND hc.active_date <= NOW() AND hc.inactive_date >= NOW()
         LEFT JOIN (
           SELECT ai2.diagnosis_code, COUNT(*) AS cnt
-          FROM adt_encounter_icd_codes ai2
-          INNER JOIN adt_encounter ae2 ON ae2.encounter_nr = ai2.encounter_nr
-          WHERE ae2.origid = p_origid
-            AND YEAR(ae2.encounter_date) = YEAR(CURDATE())
+          FROM mra1_encounter_icd_codes ai2
+          INNER JOIN mra1_encounter ae2 ON ae2.encounter_nr = ai2.encounter_nr
+          WHERE ae2.patient_id = p_origid
+            AND YEAR(ae2.enc_date) = YEAR(CURDATE())
           GROUP BY ai2.diagnosis_code
         ) cy_seen ON cy_seen.diagnosis_code = pt_codes.diagnosis_code
       ),
@@ -691,11 +690,9 @@ sp_get_patient_es_doc: BEGIN
                 JSON_ARRAY()
               ),
               'enc_medications', COALESCE(
-                (SELECT JSON_ARRAYAGG(JSON_OBJECT('rxnorm_id', dm.RxnormID))
-                 FROM drfirst_patient_medications dm
-                 WHERE dm.patientid = p_origid
-                   AND dm.admission = 'yes'
-                   AND DATE(dm.start_date) = DATE(ae.encounter_date)
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT('rxnorm_id', em.RxnormID))
+                 FROM cclf_encounter_patient_medication em
+                 WHERE em.encounter_nr = ae.encounter_nr
                 ),
                 JSON_ARRAY()
               ),
@@ -897,11 +894,9 @@ sp_get_patient_es_doc: BEGIN
                 JSON_ARRAY()
               ),
               'enc_medications', COALESCE(
-                (SELECT JSON_ARRAYAGG(JSON_OBJECT('rxnorm_id', dm.RxnormID))
-                 FROM drfirst_patient_medications dm
-                 WHERE dm.patientid = p_origid
-                   AND dm.admission = 'yes'
-                   AND DATE(dm.start_date) = me.enc_admit_date
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT('rxnorm_id', em.RxnormID))
+                 FROM cclf_encounter_patient_medication em
+                 WHERE em.encounter_nr = me.encounter_nr
                 ),
                 JSON_ARRAY()
               ),
@@ -1176,6 +1171,14 @@ sp_get_patient_es_doc: BEGIN
   ) AS es_doc
 
   FROM patient p
+  INNER JOIN (
+    SELECT *
+    FROM dc_bene_alignment_rostr_m01
+    WHERE ALIGN_STATUS_CODE IN ('AL','D1Y')
+      AND cc_version = p_cc_version
+    ORDER BY mm_date DESC
+    LIMIT 1
+  ) r ON r.mm_curr_mbi_id = p.origid
   WHERE p.origid = p_origid
   LIMIT 1;
 
