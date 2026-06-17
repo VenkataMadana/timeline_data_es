@@ -225,13 +225,15 @@ sp_get_patient_es_doc: BEGIN
         'hedis_gaps_open',    (SELECT COUNT(*) FROM mra_scorecard_alerts msa
                                WHERE msa.origid = p_origid
                                  AND msa.type = 'Hedis/Quality'
-                                 AND msa.resolved_date IS NULL),
+                                 AND msa.resolved_date IS NULL
+                                 AND msa.original_status NOT IN (4, 5)),
         'hedis_gap_measures', (SELECT JSON_ARRAYAGG(ref_description)
                                FROM (SELECT DISTINCT ref_description
                                      FROM mra_scorecard_alerts
                                      WHERE origid = p_origid
                                        AND type = 'Hedis/Quality'
-                                       AND resolved_date IS NULL) _hgm),
+                                       AND resolved_date IS NULL
+                                       AND original_status NOT IN (4, 5)) _hgm),
 
         -- CCM
         'ccm_enrolled',       IF(p.is_ccm_enabled = 1, CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
@@ -291,12 +293,14 @@ sp_get_patient_es_doc: BEGIN
         -- alerts
         'active_alerts',      (SELECT COUNT(*) FROM mra_scorecard_alerts msa
                                WHERE msa.origid = p_origid
-                                 AND msa.resolved_date IS NULL),
+                                 AND msa.resolved_date IS NULL
+                                 AND msa.original_status NOT IN (4, 5)),
         'unresolved_alert_types',(SELECT JSON_ARRAYAGG(type)
                                    FROM (SELECT DISTINCT type
                                          FROM mra_scorecard_alerts
                                          WHERE origid = p_origid
-                                           AND resolved_date IS NULL) _uat),
+                                           AND resolved_date IS NULL
+                                           AND original_status NOT IN (4, 5)) _uat),
         'last_updated',       DATE_FORMAT(NOW(), '%Y-%m-%dT%H:%i:%sZ')
       ),
 
@@ -551,6 +555,7 @@ sp_get_patient_es_doc: BEGIN
         FROM mra_scorecard_alerts msa
         WHERE msa.origid = p_origid
           AND msa.type = 'Hedis/Quality'
+          AND msa.original_status NOT IN (4, 5)
         ORDER BY msa.added_date DESC
       ),
 
@@ -657,20 +662,15 @@ sp_get_patient_es_doc: BEGIN
                    'problem_type',     aic.problem_type,
                    'icd_order',        aic.icd_order,
                    'status',           COALESCE(aic.status, 'Active'),
-                   'hcc_number',       hcd.hcc,
-                   'hcc_score',        hcd.community_nondual_aged,
-                   'hcc_included',     IF(hcd.hcc IS NOT NULL,
-                                          CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
+                   'hcc_number',       null,
+                   'hcc_score',        null,
+                   'hcc_included',     null,
                    'is_comorbid',      IF(aic.is_comorbid = 1,
                                           CAST(TRUE AS JSON), CAST(FALSE AS JSON)),
                    'agreement_status', 'Agree',
                    'source',           COALESCE(aic.source, ae.mos_type)
                  ))
                  FROM adt_encounter_icd_codes aic
-                 LEFT JOIN mra_hcc_coefficients hcd
-                   ON  hcd.diagnosis_code = aic.diagnosis_code
-                   AND hcd.active_date   <= NOW()
-                   AND hcd.inactive_date >= NOW()
                  WHERE aic.encounter_nr = ae.encounter_nr
                 ),
                 JSON_ARRAY()
@@ -928,7 +928,7 @@ sp_get_patient_es_doc: BEGIN
             'encounter_nr',    cr.encounter_nr,
             'result_date',     DATE_FORMAT(cr.result_date, '%Y-%m-%d'),
             'item_id',         crv.item_id,
-            'test_name',       fr.frows_name,
+            'test_name',       ci.item_name,
             'result_value',    crv.notes,
             'result_unit',     crv.unit,
             'alert_flag',      crv.notes_abnormality_flag,
@@ -942,7 +942,7 @@ sp_get_patient_es_doc: BEGIN
           FROM cpoe_result cr
           INNER JOIN adt_encounter ae ON ae.encounter_nr = cr.encounter_nr
           LEFT JOIN cpoe_result_values crv ON crv.result_id = cr.result_id
-          LEFT JOIN flowsheet_rows fr ON fr.frows_nr = crv.item_id
+          LEFT JOIN cpoe_item ci ON ci.item_id = crv.item_id
           WHERE ae.origid = p_origid
           ORDER BY cr.result_date DESC
         ) _labs
@@ -1035,6 +1035,7 @@ sp_get_patient_es_doc: BEGIN
           ) AS obj
           FROM mra_scorecard_alerts msa
           WHERE msa.origid = p_origid
+            AND msa.original_status NOT IN (4, 5)
           ORDER BY msa.added_date DESC
         ) _alerts
       ),
