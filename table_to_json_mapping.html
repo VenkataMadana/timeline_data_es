@@ -317,7 +317,8 @@ code{font-family:'Cascadia Code','Consolas',monospace;font-size:10px;background:
 <tr><td class="json-path">[].provider.attending_taxonomy</td><td><code>adt_encounter</code> / <code>mra1_encounter</code></td><td><code>taxonomy</code> / <code>m_prov_spclty_txt</code></td><td>varchar</td><td>—</td><td>Direct copy per branch</td><td>Provider taxonomy — specialist vs PCP classification</td></tr>
 
 <tr class="grp"><td colspan="7">── admission{} — ADT branch only; mra1 rows carry NULLs ──</td></tr>
-<tr><td class="json-path">[].admission.point_of_origin</td><td><code>adt_encounter</code></td><td><code>mh_admission_source</code></td><td>varchar</td><td>—</td><td>adt branch; mra1 branch: NULL</td><td>Admission source — ER vs elective classification</td></tr>
+<tr><td class="json-path">[].admission.point_of_origin</td><td><code>adt_encounter</code></td><td><code>mh2patient_class_curr</code></td><td>varchar(50)</td><td>—</td><td>Current patient class after any ER→IP state transitions (POS_CU_RR); adt branch; mra1 branch: NULL</td><td>Current encounter class — detects ER-to-inpatient upgrades</td></tr>
+<tr><td class="json-path">[].admission.org_admission_source</td><td><code>adt_encounter</code></td><td><code>mh_admission_source</code></td><td>varchar(100)</td><td>—</td><td>Original POS state at encounter creation; adt branch; mra1 branch: NULL</td><td>Original admission origin — ER vs elective vs transfer classification</td></tr>
 <tr><td class="json-path">[].admission.admit_type_cd</td><td><code>adt_encounter</code></td><td><code>mh_patient_class</code></td><td>varchar(20)</td><td>—</td><td>adt branch; mra1 branch: NULL</td><td>CMS admission type — inpatient coding</td></tr>
 <tr><td class="json-path">[].admission.high_utilizer</td><td><code>adt_encounter</code></td><td><code>high_utilizer</code></td><td>tinyint</td><td>—</td><td>adt branch cast to boolean; mra1 branch: false</td><td>High-cost patient flag — care management priority</td></tr>
 
@@ -798,9 +799,14 @@ code{font-family:'Cascadia Code','Consolas',monospace;font-size:10px;background:
 </table></div>
 
 <!-- ── SDOH ── -->
-<div id="sdoh" class="sec-hdr">patient.sdoh{} — meal_plans[] + reward_programs[] <span class="badge">Source: sdoh_meal_plan + option_code_values → sp_load_meal_plan_json_v2 | chronic_disease_reward_program → sp_load_reward_program_json_v2</span></div>
+<div id="sdoh" class="sec-hdr">patient.sdoh{} — food_insecurity[] + meal_plans[] + reward_programs[] <span class="badge">Source: mra_member_history_data (history_nr 15074+15078) | sdoh_meal_plan | chronic_disease_reward_program</span></div>
 <div class="tbl-wrap"><table>
 <tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
+<tr class="grp"><td colspan="7">── food_insecurity[] — year-grouped assessment history; history_nr 15074 (food ran out) + 15078 (couldn't afford food) ──</td></tr>
+<tr><td class="json-path">food_insecurity[].assessment_year</td><td><code>mra_member_history_data</code></td><td><code>YEAR(created_date)</code></td><td>int</td><td><span class="pk">GROUP</span></td><td>GROUP BY YEAR(created_date) ORDER BY DESC</td><td>Assessment year — year-over-year food insecurity trend</td></tr>
+<tr><td class="json-path">food_insecurity[].latest_date</td><td><code>mra_member_history_data</code></td><td><code>created_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT MAX(created_date) '%Y-%m-%d'</td><td>Most recent assessment in the year — staleness indicator</td></tr>
+<tr><td class="json-path">food_insecurity[].responses</td><td><code>mra_member_history_data</code></td><td><code>history_value</code></td><td>longtext</td><td>—</td><td>GROUP_CONCAT(DISTINCT history_value ORDER BY created_date DESC SEPARATOR ', '); excludes NULL/empty; values: 'Never true', 'Sometimes true', 'Often true', 'Choose not to Answer'</td><td>Exact question responses — food insecurity severity without boolean loss</td></tr>
+<tr class="grp"><td colspan="7">── rule_flags.sdoh_food_insecurity (boolean) — derived from latest assessment year: true if any response IN ('Sometimes true','Often true') ──</td></tr>
 <tr><td class="json-path">meal_plans[].id</td><td><code>sdoh_meal_plan</code></td><td><code>nr</code></td><td>int</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per meal plan order</td></tr>
 <tr><td class="json-path">meal_plans[].patientId</td><td><code>sdoh_meal_plan</code></td><td><code>origid</code></td><td>varchar(64)</td><td><span class="fk">Correlation</span></td><td>Direct copy</td><td>Patient correlation key</td></tr>
 <tr><td class="json-path">meal_plans[].createdDate</td><td><code>sdoh_meal_plan</code></td><td><code>created_date</code></td><td>datetime</td><td>—</td><td>DATE_FORMAT '%m/%d/%Y'</td><td>Plan creation date — program enrollment tracking</td></tr>
@@ -838,7 +844,7 @@ code{font-family:'Cascadia Code','Consolas',monospace;font-size:10px;background:
 <div class="tbl-wrap"><table>
 <tr><th>JSON Path</th><th>Source Table</th><th>Source Column</th><th>MySQL Type</th><th>CDC Key</th><th>Transformation</th><th>Value-Care Purpose</th></tr>
 <tr><td class="json-path">[].id</td><td><code>allergies_medications</code></td><td><code>appointmentid</code></td><td>varchar</td><td><span class="pk">PK</span></td><td>Direct copy</td><td>CDC identity per EMR appointment</td></tr>
-<tr><td class="json-path">[].account_id</td><td><code>adt_patient</code></td><td><code>account_id</code></td><td>varchar(60)</td><td><span class="fk">Correlation</span></td><td>Carried from patient root</td><td>Cross-section lookup</td></tr>
+<tr><td class="json-path">[].account_id</td><td><code>patient</code></td><td><code>account_id</code></td><td>varchar(60)</td><td><span class="fk">Correlation</span></td><td>INNER JOIN patient ON origid = p_origid; carried from patient root</td><td>Cross-section lookup</td></tr>
 <tr><td class="json-path">[].encounter_date</td><td><code>allergies_medications</code></td><td><code>encounterdate</code></td><td>datetime</td><td>—</td><td>ISO-8601, LENGTH guard ≤19</td><td>EMR encounter date — PCP visit compliance</td></tr>
 <tr><td class="json-path">[].appointment_start</td><td><code>allergies_medications</code></td><td><code>appointmentstartdate</code></td><td>datetime</td><td>—</td><td>ISO-8601 datetime, LENGTH guard ≤19</td><td>Appointment scheduling analytics</td></tr>
 <tr><td class="json-path">[].closed_date</td><td><code>allergies_medications</code></td><td><code>closeddate</code></td><td>datetime</td><td>—</td><td>ISO-8601 datetime, LENGTH guard ≤19</td><td>Visit duration — efficiency analytics</td></tr>
@@ -846,6 +852,7 @@ code{font-family:'Cascadia Code','Consolas',monospace;font-size:10px;background:
 <tr><td class="json-path">[].visit_name</td><td><code>allergies_medications</code></td><td><code>encountervisitname</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Named visit type — AWV detection for HEDIS</td></tr>
 <tr><td class="json-path">[].patient_status</td><td><code>allergies_medications</code></td><td><code>patientstatus</code></td><td>varchar</td><td>—</td><td>Direct copy</td><td>Checked-in/out status — no-show analytics</td></tr>
 <tr><td class="json-path">[].type</td><td><code>allergies_medications</code></td><td><code>type</code></td><td>varchar</td><td>—</td><td>Direct copy ('encounter' or 'appointment')</td><td>Completed vs scheduled — gap detection</td></tr>
+<tr><td class="json-path">[].completed</td><td><code>allergies_medications</code></td><td><code>patientstatus</code></td><td>varchar</td><td>—</td><td><span class="computed">Computed</span>: IF patientstatus IN ('Checked Out','Completed','checked_out') → true</td><td>Visit completion flag — AWV completion detection for HEDIS</td></tr>
 </table></div>
 
 </div><!-- /section -->

@@ -16,18 +16,23 @@
 --   • CDC strategy: ES ReplaceOne on {patient.id} = p_origid
 --
 -- Source tables (mradb_prod):
---   patient (base), dc_bene_alignment_rostr_m01 (base),
+--   patient (base), dc_bene_alignment_rostr_m01 (base, care_team, enrollment),
 --   mra_dce_cm_mapping + personell (care team role resolution),
 --   adt_encounter, mra1_encounter (UNION ALL for encounter spine),
---   adt_encounter_icd_codes (encounters diagnoses), mra1_encounter_icd_codes (hcc_capture), adt_encounter_procedure,
---   mra1_encounter_bill_cpts, mra_hcc_coefficients, mra_raf_patient,
---   mra_uamcc_details, mra_scorecard_alerts, drfirst_patient_medications (patient-level medications),
+--   adt_encounter_icd_codes (encounters[].diagnoses + chronic_conditions),
+--   mra1_encounter_icd_codes (hcc_capture), mra1_encounter_bill_cpts (procedures both branches),
+--   mra_hcc_coefficients (diagnoses HCC join), mra_raf_patient (raf_profile + rule_flags),
+--   mra_uamcc_details (uamcc + rule_flags), mra_scorecard_alerts (alerts + hedis_measures + rule_flags),
+--   drfirst_patient_medications (patient-level medications),
 --   cclf_encounter_patient_medication (encounter-level enc_medications),
---   encounter_risk_assesments, in_home_patient_program, mra_chart_queue,
---   reminder_events, transportation_benefit, sdoh_meal_plan,
---   chronic_disease_reward_program, care_plan, care_plan_patient,
---   mra_assessments_and_screenings, cpoe_result, cpoe_result_values,
---   flowsheet_rows, adt_appointment, qip_uamcc_lambda
+--   cpoe_result + cpoe_result_values + cpoe_item (labs),
+--   transportation_benefit (transport_benefits + sdoh + rule_flags),
+--   sdoh_meal_plan (sdoh.meal_plans), chronic_disease_reward_program (sdoh.reward_programs),
+--   care_plan_patient (rule_flags.care_plan_active),
+--   mra_member_history_data (sdoh.food_insecurity + rule_flags.sdoh_food_insecurity;
+--                             history_nr 15074 + 15078),
+--   mra_assessments_and_screenings (assessments),
+--   allergies_medications (emr_appointments, type IN ('encounter','appointment'))
 --
 -- Encounter spine strategy:
 --   adt_encounter  → source_system = 'adt'  (ADT/EMR events; full clinical detail)
@@ -241,12 +246,22 @@ sp_get_patient_es_doc: BEGIN
         'ccm_level',          p.ccm_level,
 
         -- SDOH flags
-        'sdoh_food_insecurity',(SELECT IF(COUNT(*) > 0, CAST(TRUE AS JSON), CAST(FALSE AS JSON))
-                                FROM encounter_risk_assesments era
-                                INNER JOIN adt_encounter ae ON ae.encounter_nr = era.encounter_nr
-                                WHERE ae.origid = p_origid
-                                  AND era.sub_type = 'SDOH'
-                                  AND era.result_code_desc LIKE '%food%'),
+        'sdoh_food_insecurity',(SELECT IF(
+                                  SUM(CASE WHEN history_value IN ('Sometimes true','Often true')
+                                           THEN 1 ELSE 0 END) > 0,
+                                  CAST(TRUE AS JSON), CAST(FALSE AS JSON)
+                                )
+                                FROM mra_member_history_data
+                                WHERE history_nr IN (15074, 15078)
+                                  AND origid = p_origid
+                                  AND history_value IS NOT NULL AND history_value != ''
+                                  AND YEAR(created_date) = (
+                                    SELECT YEAR(MAX(created_date))
+                                    FROM mra_member_history_data
+                                    WHERE history_nr IN (15074, 15078)
+                                      AND origid = p_origid
+                                      AND history_value IS NOT NULL AND history_value != ''
+                                  )),
         'sdoh_transport_barrier',(SELECT IF(COUNT(*) > 0, CAST(TRUE AS JSON), CAST(FALSE AS JSON))
                                    FROM transportation_benefit tb
                                    WHERE tb.orig_id = p_origid),
@@ -618,7 +633,8 @@ sp_get_patient_es_doc: BEGIN
               ),
 
               'admission', JSON_OBJECT(
-                'point_of_origin',    ae.mh_admission_source,
+                'point_of_origin',    ae.mh2patient_class_curr,
+                'org_admission_source', ae.mh_admission_source,
                 'purpose',            ae.referrer_diagnosis,
                 'admit_type_cd',      ae.mh_patient_class,
                 'confirmed_mra',      IF(ae.appt_confirmed_mra IS NOT NULL,
@@ -690,7 +706,17 @@ sp_get_patient_es_doc: BEGIN
                 JSON_ARRAY()
               ),
               'enc_medications', COALESCE(
-                (SELECT JSON_ARRAYAGG(JSON_OBJECT('rxnorm_id', em.RxnormID))
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                   'id',              em.id,
+                   'ndc_id',          em.NDCID,
+                   'rxnorm_id',       em.RxnormID,
+                   'medication_name', em.medications,
+                   'dose',            em.dose,
+                   'dose_unit',       em.dose_unit,
+                   'start_date',      DATE_FORMAT(em.start_date, '%Y-%m-%dT%H:%i:%s'),
+                   'stop_date',       DATE_FORMAT(em.stop_date,  '%Y-%m-%dT%H:%i:%s'),
+                   'delete_status',   em.delete_status
+                 ))
                  FROM cclf_encounter_patient_medication em
                  WHERE em.encounter_nr = ae.encounter_nr
                 ),
@@ -754,6 +780,7 @@ sp_get_patient_es_doc: BEGIN
 
               'admission', JSON_OBJECT(
                 'point_of_origin',    NULL,
+                'org_admission_source', NULL,
                 'purpose',            NULL,
                 'admit_type_cd',      NULL,
                 'confirmed_mra',      CAST(FALSE AS JSON),
@@ -894,7 +921,17 @@ sp_get_patient_es_doc: BEGIN
                 JSON_ARRAY()
               ),
               'enc_medications', COALESCE(
-                (SELECT JSON_ARRAYAGG(JSON_OBJECT('rxnorm_id', em.RxnormID))
+                (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                   'id',              em.id,
+                   'ndc_id',          em.NDCID,
+                   'rxnorm_id',       em.RxnormID,
+                   'medication_name', em.medications,
+                   'dose',            em.dose,
+                   'dose_unit',       em.dose_unit,
+                   'start_date',      DATE_FORMAT(em.start_date, '%Y-%m-%dT%H:%i:%s'),
+                   'stop_date',       DATE_FORMAT(em.stop_date,  '%Y-%m-%dT%H:%i:%s'),
+                   'delete_status',   em.delete_status
+                 ))
                  FROM cclf_encounter_patient_medication em
                  WHERE em.encounter_nr = me.encounter_nr
                 ),
@@ -1043,13 +1080,28 @@ sp_get_patient_es_doc: BEGIN
       -- ─ sdoh{} ────────────────────────────────────────────────────────────
       'sdoh', JSON_OBJECT(
         'id',                    CONCAT(p_origid, '_sdoh'),
-        'food_insecurity_flag', (
-          SELECT IF(COUNT(*) > 0, CAST(TRUE AS JSON), CAST(FALSE AS JSON))
-          FROM encounter_risk_assesments era
-          INNER JOIN adt_encounter ae ON ae.encounter_nr = era.encounter_nr
-          WHERE ae.origid = p_origid
-            AND era.sub_type = 'SDOH'
-            AND era.result_code_desc LIKE '%food%'
+        'food_insecurity', COALESCE(
+          (SELECT JSON_ARRAYAGG(obj)
+           FROM (
+             SELECT JSON_OBJECT(
+               'assessment_year', YEAR(mmhd.created_date),
+               'latest_date',     DATE_FORMAT(MAX(mmhd.created_date), '%Y-%m-%d'),
+               'responses',       GROUP_CONCAT(
+                                    DISTINCT mmhd.history_value
+                                    ORDER BY mmhd.created_date DESC
+                                    SEPARATOR ', '
+                                  )
+             ) AS obj
+             FROM mra_member_history_data mmhd
+             WHERE mmhd.history_nr IN (15074, 15078)
+               AND mmhd.origid = p_origid
+               AND mmhd.history_value IS NOT NULL
+               AND mmhd.history_value != ''
+             GROUP BY YEAR(mmhd.created_date)
+             ORDER BY YEAR(mmhd.created_date) DESC
+           ) _food
+          ),
+          JSON_ARRAY()
         ),
         'transport_barrier_flag', (
           SELECT IF(COUNT(*) > 0, CAST(TRUE AS JSON), CAST(FALSE AS JSON))
@@ -1137,25 +1189,29 @@ sp_get_patient_es_doc: BEGIN
       ),
 
       -- ─ emr_appointments[] ────────────────────────────────────────────────
+      -- Source: allergies_medications WHERE type IN ('encounter','appointment')
+      -- appointmentstartdate/closeddate carry timezone suffix (+HH:MM) — LEFT(x,19) strips it to ISO-8601 local
       'emr_appointments', (
         SELECT JSON_ARRAYAGG(obj)
         FROM (
           SELECT JSON_OBJECT(
-            'id',                aa.nr,
-            'appointment_id',    CAST(aa.nr AS CHAR),
-            'encounter_date',    DATE_FORMAT(aa.date, '%Y-%m-%d'),
-            'appointment_start', DATE_FORMAT(aa.date, CONCAT('%Y-%m-%d', 'T', '%H:%i:%s')),
-            'encounter_type',    aa.encounter_class_nr,
-            'visit_name',        aa.purpose,
-            'provider_name',     aa.to_personell_name,
-            'patient_status',    aa.appt_status,
-            'type',              'appointment',
-            'completed',         IF(aa.appt_status IN ('Checked Out','Completed','checked_out'),
+            'id',                am.appointmentid,
+            'account_id',        pat.account_id,
+            'encounter_date',    am.encounterdate,
+            'appointment_start', NULLIF(LEFT(am.appointmentstartdate, 19), ''),
+            'closed_date',       NULLIF(LEFT(am.closeddate, 19), ''),
+            'encounter_type',    am.encountertype,
+            'visit_name',        am.encountervisitname,
+            'patient_status',    am.patientstatus,
+            'type',              am.type,
+            'completed',         IF(am.patientstatus IN ('Checked Out','Completed','checked_out'),
                                      CAST(TRUE AS JSON), CAST(FALSE AS JSON))
           ) AS obj
-          FROM adt_appointment aa
-          WHERE aa.origid = p_origid
-          ORDER BY aa.date DESC
+          FROM allergies_medications am
+          INNER JOIN patient pat ON pat.origid = p_origid
+          WHERE am.origid = p_origid
+            AND am.type IN ('encounter','appointment')
+          ORDER BY am.encounterdate DESC
         ) _appts
       ),
 
